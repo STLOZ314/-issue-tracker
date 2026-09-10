@@ -36,7 +36,10 @@ function validatePatchBody(body) {
 }
 
 router.patch("/:id", (req, res) => {
-  
+  const validationError = validatePatchBody(req.body);
+  if (validationError) {
+    return res.status(400).json({ error: validationError });
+  }
 
   const issue = getIssueById(Number(req.params.id));
   if (!issue) {
