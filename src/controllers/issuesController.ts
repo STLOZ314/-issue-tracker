@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { Issue, getNextId, issues } from "../data/issues";
+import { Issue, getNextId, issues } from "../data/issues.js";
 
 export function listIssues(_req: Request, res: Response) {
   res.status(200).json(issues);

@@ -1,9 +1,9 @@
 import express from "express";
 import path from "node:path";
 
-import { errorHandler } from "./middleware/errorHandler";
-import { requestLogger } from "./middleware/logger";
-import issuesRouter from "./routes/issues";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { requestLogger } from "./middleware/logger.js";
+import issuesRouter from "./routes/issues.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;

@@ -5,7 +5,7 @@ import {
   getIssueById,
   listIssues,
   updateIssue,
-} from "../controllers/issuesController";
+} from "../controllers/issuesController.js";
 
 const issuesRouter = Router();
 
