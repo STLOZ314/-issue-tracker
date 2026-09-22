@@ -1,18 +1,43 @@
 import { NextFunction, Request, Response } from "express";
-import { Issue, getNextId, issues } from "../data/issues.js";
+import { ObjectId } from "mongodb";
+import { getIssuesCollection } from "../db.js";
+import { Issue } from "../data/issues.js";
 
-export function listIssues(_req: Request, res: Response) {
-  res.status(200).json(issues);
-}
-
-export function getIssueById(
-  req: Request,
+export async function listIssues(
+  _req: Request,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const id = Number(req.params.id);
-    const issue = issues.find((i) => i.id === id);
+    const issues = await getIssuesCollection().find({}).toArray();
+    res.status(200).json(issues);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getIssueById(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  let objectId: ObjectId;
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    res.status(400).json({ error: "Invalid issue id" });
+    return;
+  }
+
+  try {
+    objectId = new ObjectId(id);
+  } catch {
+    res.status(400).json({ error: "Invalid issue id" });
+    return;
+  }
+
+  try {
+    const issue = await getIssuesCollection().findOne({ _id: objectId });
     if (!issue) {
       res.status(404).json({ error: "Issue not found" });
       return;
@@ -23,49 +48,103 @@ export function getIssueById(
   }
 }
 
-export function createIssue(req: Request, res: Response) {
-  const { title, description, priority } = req.body || {};
-  if (!title || typeof title !== "string" || title.trim() === "") {
-    res.status(400).json({ error: "Title is required" });
-    return;
-  }
+export async function createIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { title, description, priority } = req.body || {};
+    if (!title || typeof title !== "string" || title.trim() === "") {
+      res.status(400).json({ error: "Title is required" });
+      return;
+    }
 
-  const newIssue: Issue = {
-    id: getNextId(),
-    title,
-    description: description || "",
-    status: "open",
-    priority: priority || "medium",
-  };
-  issues.push(newIssue);
-  res.status(201).json(newIssue);
+    const issues = getIssuesCollection();
+    const newIssue: Omit<Issue, "_id"> = {
+      title,
+      description: description || "",
+      status: "open",
+      priority: priority || "medium",
+    };
+    const result = await issues.insertOne(newIssue);
+    res.status(201).json({ _id: result.insertedId, ...newIssue });
+  } catch (err) {
+    next(err);
+  }
 }
 
-export function updateIssue(req: Request, res: Response) {
-  const id = Number(req.params.id);
-  const issue = issues.find((i) => i.id === id);
-  if (!issue) {
-    res.status(404).json({ error: "Issue not found" });
+export async function updateIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  let objectId: ObjectId;
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    res.status(400).json({ error: "Invalid issue id" });
     return;
   }
 
-  const { title, description, status, priority } = req.body || {};
-  if (title !== undefined) issue.title = title;
-  if (description !== undefined) issue.description = description;
-  if (status !== undefined) issue.status = status;
-  if (priority !== undefined) issue.priority = priority;
+  try {
+    objectId = new ObjectId(id);
+  } catch {
+    res.status(400).json({ error: "Invalid issue id" });
+    return;
+  }
 
-  res.status(200).json(issue);
+  try {
+    const { title, description, status, priority } = req.body || {};
+    const updates: Partial<Omit<Issue, "_id">> = {};
+    if (title !== undefined) updates.title = title;
+    if (description !== undefined) updates.description = description;
+    if (status !== undefined) updates.status = status;
+    if (priority !== undefined) updates.priority = priority;
+
+    const issues = getIssuesCollection();
+    const result = await issues.updateOne({ _id: objectId }, { $set: updates });
+    if (result.matchedCount === 0) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    const issue = await issues.findOne({ _id: objectId });
+    res.status(200).json(issue);
+  } catch (err) {
+    next(err);
+  }
 }
 
-export function deleteIssue(req: Request, res: Response) {
-  const id = Number(req.params.id);
-  const index = issues.findIndex((i) => i.id === id);
-  if (index === -1) {
-    res.status(404).json({ error: "Issue not found" });
+export async function deleteIssue(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  let objectId: ObjectId;
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    res.status(400).json({ error: "Invalid issue id" });
     return;
   }
 
-  issues.splice(index, 1);
-  res.status(204).send();
+  try {
+    objectId = new ObjectId(id);
+  } catch {
+    res.status(400).json({ error: "Invalid issue id" });
+    return;
+  }
+
+  try {
+    const result = await getIssuesCollection().deleteOne({ _id: objectId });
+    if (result.deletedCount === 0) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 }
