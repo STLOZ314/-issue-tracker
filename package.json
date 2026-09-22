@@ -19,8 +19,7 @@
   "type": "module",
   "dependencies": {
     "debug": "^4.4.3",
-    "express": "^5.2.1",
-    "mongodb": "^7.6.0"
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
