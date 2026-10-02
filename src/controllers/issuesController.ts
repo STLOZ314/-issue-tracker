@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { getIssuesCollection } from "../db.js";
 import { Issue } from "../data/issues.js";
+import { CreateIssueInput, UpdateIssueInput } from "../schemas/issueSchemas.js";
 
 export async function listIssues(
   _req: Request,
@@ -54,17 +55,16 @@ export async function createIssue(
   next: NextFunction,
 ) {
   try {
-    const { title, description, priority } = req.body || {};
-    if (!title || typeof title !== "string" || title.trim() === "") {
-      res.status(400).json({ error: "Title is required" });
-      return;
-    }
-
+    const input = req.body as CreateIssueInput;
     const newIssue: Issue = {
-      title,
-      description: description || "",
+      ...input,
       status: "open",
-      priority: priority || "medium",
+      classification: "unclassified",
+      author: req.user, // never req.body - identity must come from the server
+      createdOn: new Date(),
+      comments: [],
+      testCases: [],
+      timeLog: [],
     };
     const result = await getIssuesCollection().insertOne(newIssue);
     res.status(201).json({ _id: result.insertedId, ...newIssue });
@@ -94,12 +94,7 @@ export async function updateIssue(
   }
 
   try {
-    const { title, description, status, priority } = req.body || {};
-    const updates: Partial<Issue> = {};
-    if (title !== undefined) updates.title = title;
-    if (description !== undefined) updates.description = description;
-    if (status !== undefined) updates.status = status;
-    if (priority !== undefined) updates.priority = priority;
+    const updates = req.body as UpdateIssueInput;
 
     const issues = getIssuesCollection();
     const result = await issues.updateOne({ _id: objectId }, { $set: updates });

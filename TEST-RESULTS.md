@@ -15,3 +15,17 @@ Verified against the deployed Cloud Run service backed by MongoDB Atlas.
 | `DELETE /issues/:id` | — | 204 | 204 | Deleted the temporary ObjectId-created document; no response body. |
 | `GET /issues/:deletedId` | — | 404 | 404 | Confirms the deleted ObjectId no longer resolves. |
 | `DELETE /issues/000000000000000000000000` | — | 404 | 404 | Valid ObjectId with no matching document. |
+
+# Test Results Pass — Day 24/25 (Zod Validation + Server-Side author)
+
+Verified locally against `npm run dev` backed by MongoDB Atlas.
+
+| Request | Body | Expected Status | Actual Status | Notes / Response |
+| --- | --- | --- | --- | --- |
+| `POST /issues` | `{"title":"Login button unresponsive","description":"...","stepsToReproduce":"...","priority":"high"}` | 201 | 201 | `author` in the response was `{"userId":"user-placeholder-001","fullName":"Jordan Casey"}` — the `attachCurrentUser` placeholder, not anything sent in the request. |
+| `POST /issues` | `{"description":"No title here","stepsToReproduce":"do a thing","priority":"low"}` (no `title`) | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"title","message":"Invalid input: expected string, received undefined"}]}`; no document created. |
+| `POST /issues` | Valid body plus `"author":{"userId":"attacker-999","fullName":"Not Me"}` | 201 | 201 | Response `author` was still the server placeholder `{"userId":"user-placeholder-001","fullName":"Jordan Casey"}`; the client-supplied `author` was stripped by `validateBody`/`createIssueSchema` and never reached the controller. |
+| `PATCH /issues/:id` | `{"priority":"high"}` | 200 | 200 | Only `priority` changed (`"medium"` → `"high"`); `title`, `description`, `stepsToReproduce`, `status`, `classification`, `author`, `createdOn`, `comments`, `testCases`, and `timeLog` were all unchanged. |
+
+Test documents created during this pass were deleted via `DELETE /issues/:id` after verification.
+
