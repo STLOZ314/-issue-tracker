@@ -8,9 +8,10 @@ export interface Issue {
   description: string;
   stepsToReproduce: string;
   status: "open" | "in-progress" | "closed";
-  classification: string;
+  classification: "unclassified" | "approved" | "unapproved" | "duplicate";
   priority: "low" | "medium" | "high";
   author: IssueUserRef;
+  assignedTo?: IssueUserRef;
   createdOn: Date;
   comments: unknown[];
   testCases: unknown[];

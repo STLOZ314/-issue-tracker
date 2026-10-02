@@ -29,3 +29,18 @@ Verified locally against `npm run dev` backed by MongoDB Atlas.
 
 Test documents created during this pass were deleted via `DELETE /issues/:id` after verification.
 
+# Test Results Pass — Lab 04-02 (Semantic Endpoints: status, classify, assign)
+
+Verified locally against `npm run dev` backed by MongoDB Atlas.
+
+| Request | Body | Expected Status | Actual Status | Notes / Response |
+| --- | --- | --- | --- | --- |
+| `PATCH /issues/:id/status` | `{"status":"in-progress"}` | 200 | 200 | Response `status` changed to `"in-progress"`; only that field was touched. |
+| `PATCH /issues/:id/status` | `{"status":"done"}` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"status","message":"Invalid option: expected one of \"open\"\|\"in-progress\"\|\"closed\""}]}`; no write occurred. |
+| `PATCH /issues/:id/classify` | `{"classification":"approved"}` | 200 | 200 | Response `classification` changed to `"approved"`; only that field was touched. |
+| `PATCH /issues/:id/classify` | `{"classification":"spam"}` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"classification","message":"Invalid option: expected one of \"unclassified\"\|\"approved\"\|\"unapproved\"\|\"duplicate\""}]}`; no write occurred. |
+| `PATCH /issues/:id/assign` | `{"userId":"dev-noor-7","fullName":"Noor Haddad"}` | 200 | 200 | Response `assignedTo` was exactly `{"userId":"dev-noor-7","fullName":"Noor Haddad"}` — taken directly from the request body, unlike `author`'s fixed server placeholder. |
+| `PATCH /issues/:id/assign` | `{"userId":"dev-noor-7"}` (no `fullName`) | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"fullName","message":"Invalid input: expected string, received undefined"}]}`; no write occurred. |
+
+`getIssueById` was re-tested with an invalid id (`GET /issues/not-a-valid-id`) after the `parseId()` refactor and still returned `400 {"error":"Invalid issue id"}`, confirming the shared helper preserved existing behavior. Test documents created during this pass were deleted via `DELETE /issues/:id` after verification.
+

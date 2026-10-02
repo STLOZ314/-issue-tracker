@@ -12,3 +12,22 @@ export type CreateIssueInput = z.infer<typeof createIssueSchema>;
 export const updateIssueSchema = createIssueSchema.partial();
 
 export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;
+
+export const setStatusSchema = z.object({
+  status: z.enum(["open", "in-progress", "closed"]),
+});
+
+export type SetStatusInput = z.infer<typeof setStatusSchema>;
+
+export const classifyIssueSchema = z.object({
+  classification: z.enum(["unclassified", "approved", "unapproved", "duplicate"]),
+});
+
+export type ClassifyIssueInput = z.infer<typeof classifyIssueSchema>;
+
+export const assignIssueSchema = z.object({
+  userId: z.string().min(1, "userId is required"),
+  fullName: z.string().min(1, "fullName is required"),
+});
+
+export type AssignIssueInput = z.infer<typeof assignIssueSchema>;
