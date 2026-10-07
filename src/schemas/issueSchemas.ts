@@ -31,3 +31,15 @@ export const assignIssueSchema = z.object({
 });
 
 export type AssignIssueInput = z.infer<typeof assignIssueSchema>;
+
+export const setTestCaseResultSchema = z.object({
+  passed: z.boolean(),
+});
+
+export type SetTestCaseResultInput = z.infer<typeof setTestCaseResultSchema>;
+
+export const addCommentSchema = z.object({
+  comment: z.string().min(1, "Comment is required"),
+});
+
+export type AddCommentInput = z.infer<typeof addCommentSchema>;

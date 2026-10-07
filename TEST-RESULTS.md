@@ -44,3 +44,16 @@ Verified locally against `npm run dev` backed by MongoDB Atlas.
 
 `getIssueById` was re-tested with an invalid id (`GET /issues/not-a-valid-id`) after the `parseId()` refactor and still returned `400 {"error":"Invalid issue id"}`, confirming the shared helper preserved existing behavior. Test documents created during this pass were deleted via `DELETE /issues/:id` after verification.
 
+# Test Results Pass — Day 28 (Comments + Test Cases)
+
+Verified locally against the running API on 2026-10-07. The temporary issue was deleted after the checks.
+
+| Request | Body | Expected Status | Actual Status | Notes / Response |
+| --- | --- | --- | --- | --- |
+| `POST /issues/:id/comments` | `{"comment":"comment to remove"}` | 201 | 201 | Comment was appended with `userId` `user-placeholder-001` and `fullName` `Jordan Casey`, matching the server placeholder identity. |
+| `POST /issues/:id/comments` | `{"comment":""}` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"comment","message":"Comment is required"}]}`; no comment was added. |
+| `DELETE /issues/:id/comments/:commentId` | — | 200 | 200 | Deleted the first of two comments. The response contained only the other comment, unchanged. |
+| `POST /issues/:id/test-cases` | — | 201 | 201 | No request body was sent. The new test case had `passed: false`. |
+| `PATCH /issues/:id/test-cases/:testCaseId` | `{"passed":true}` | 200 | 200 | The selected test case changed to `passed: true`; the second test case remained `passed: false` and otherwise unchanged. Exactly one test case was passed. |
+| `DELETE /issues/:id` | — | 204 | 204 | Removed the temporary verification issue. |
+

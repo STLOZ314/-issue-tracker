@@ -1,11 +1,14 @@
+import { randomUUID } from "crypto";
 import { NextFunction, Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { getIssuesCollection } from "../db.js";
 import { Issue } from "../data/issues.js";
 import {
+  AddCommentInput,
   AssignIssueInput,
   ClassifyIssueInput,
   CreateIssueInput,
+  SetTestCaseResultInput,
   SetStatusInput,
   UpdateIssueInput,
 } from "../schemas/issueSchemas.js";
@@ -171,6 +174,122 @@ export async function assignIssue(
       return;
     }
     res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function addComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const { comment } = req.body as AddCommentInput;
+    const newComment = {
+      _id: randomUUID(),
+      userId: req.user.userId,
+      fullName: req.user.fullName,
+      comment,
+      createdOn: new Date(),
+    };
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      { $push: { comments: newComment } },
+      { returnDocument: "after" },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function addTestCase(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const newTestCase = {
+      _id: randomUUID(),
+      userId: req.user.userId,
+      passed: false,
+      createdOn: new Date(),
+    };
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      { $push: { testCases: newTestCase } },
+      { returnDocument: "after" },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function setTestCaseResult(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const testCaseId = req.params.testCaseId as string;
+    const { passed } = req.body as SetTestCaseResultInput;
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      { $set: { "testCases.$[tc].passed": passed } },
+      {
+        arrayFilters: [{ "tc._id": testCaseId }],
+        returnDocument: "after",
+      },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteComment(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const commentId = req.params.commentId as string;
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      { $pull: { comments: { _id: commentId } } },
+      { returnDocument: "after" },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.json(result);
   } catch (err) {
     next(err);
   }
