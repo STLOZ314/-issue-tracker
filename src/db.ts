@@ -13,6 +13,7 @@ export async function getDb(): Promise<Db> {
     const client = new MongoClient(connectionString);
     await client.connect();
     db = client.db("issueTracker");
+    await db.collection<Issue>("issues").createIndex({ status: 1, createdOn: -1 });
   }
 
   return db;

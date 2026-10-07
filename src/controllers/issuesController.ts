@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 import { getIssuesCollection } from "../db.js";
 import { Issue } from "../data/issues.js";
 import {
@@ -8,6 +8,7 @@ import {
   AssignIssueInput,
   ClassifyIssueInput,
   CreateIssueInput,
+  ListIssuesQuery,
   SetTestCaseResultInput,
   SetStatusInput,
   UpdateIssueInput,
@@ -23,13 +24,48 @@ function parseId(req: Request, res: Response): ObjectId | undefined {
 }
 
 export async function listIssues(
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    const issues = await getIssuesCollection().find({}).toArray();
-    res.status(200).json(issues);
+    const query = req.query as unknown as ListIssuesQuery;
+    const issues = getIssuesCollection();
+    const filter: Record<string, unknown> = {};
+
+    if (query.status) filter.status = query.status;
+    if (query.priority) filter.priority = query.priority;
+    if (query.classification) filter.classification = query.classification;
+    if (query.assignedTo) filter["assignedTo.userId"] = query.assignedTo;
+    const skip = (query.page - 1) * query.limit;
+
+    if (query.q) {
+      const pipeline: Document[] = [
+        {
+          $search: {
+            index: "default",
+            text: { query: query.q, path: ["title", "description"] },
+          },
+        },
+      ];
+      if (Object.keys(filter).length > 0) pipeline.push({ $match: filter });
+      if (query.sort) {
+        const descending = query.sort.startsWith("-");
+        const field = descending ? query.sort.slice(1) : query.sort;
+        pipeline.push({ $sort: { [field]: descending ? -1 : 1 } });
+      }
+      pipeline.push({ $skip: skip }, { $limit: query.limit });
+      return res.json(await issues.aggregate(pipeline).toArray());
+    }
+
+    const cursor = issues.find(filter);
+    if (query.sort) {
+      const descending = query.sort.startsWith("-");
+      const field = descending ? query.sort.slice(1) : query.sort;
+      cursor.sort({ [field]: descending ? -1 : 1 });
+    }
+    cursor.skip(skip).limit(query.limit);
+    res.json(await cursor.toArray());
   } catch (err) {
     next(err);
   }

@@ -57,3 +57,26 @@ Verified locally against the running API on 2026-10-07. The temporary issue was 
 | `PATCH /issues/:id/test-cases/:testCaseId` | `{"passed":true}` | 200 | 200 | The selected test case changed to `passed: true`; the second test case remained `passed: false` and otherwise unchanged. Exactly one test case was passed. |
 | `DELETE /issues/:id` | — | 204 | 204 | Removed the temporary verification issue. |
 
+# Test Results Pass — Day 29/30 (Query and Pagination)
+
+Verified locally against `npm run dev` backed by MongoDB Atlas on 2026-10-07. Temporary test issues were deleted after verification.
+
+| Request | Expected Status | Actual Status | Notes / Response |
+| --- | --- | --- | --- |
+| `GET /issues?status=open` | 200 | 200 | Every returned issue had `status: "open"`. |
+| `GET /issues?status=open&priority=high` | 200 | 200 | Every result matched both filters. |
+| `GET /issues?priority=medium` | 200 | 200 | Every result had `priority: "medium"`. |
+| `GET /issues?classification=approved` | 200 | 200 | Returned the approved fixture and every result was approved. |
+| `GET /issues?assignedTo=retest-assignee-alpha` | 200 | 200 | Returned only the three issues assigned to that user id. |
+| `GET /issues?status=closed&priority=high&classification=unapproved&assignedTo=retest-assignee-alpha` | 200 | 200 | Returned only the issue matching all four filters. |
+| `GET /issues?sort=-createdOn` | 200 | 200 | Results were newest-first. |
+| `GET /issues?sort=title` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"sort","message":"Invalid option: expected one of \"createdOn\"|\"-createdOn\""}]}`. |
+| `GET /issues?q=orchid` | 200 | 200 | Matched `ORCHID` in the title and `Orchid` in the description of a separate issue whose title did not contain the keyword. |
+| `GET /issues?page=1&limit=2&sort=-createdOn` | 200 | 200 | Returned exactly two issues. |
+| `GET /issues?page=2&limit=2&sort=-createdOn` | 200 | 200 | Returned two different issues, the next batch in newest-first order. |
+| `GET /issues?limit=51` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"limit","message":"Too big: expected number to be <=50"}]}`. |
+
+Atlas Search index on `issueTracker.issues`: name `default`, mapping `{ "mappings": { "dynamic": true } }`, Atlas UI status `READY` (search index ready). The application startup completed `createIndex({ status: 1, createdOn: -1 })` before the local API began listening.
+
+Pre-redeployment Cloud Run check on 2026-10-07: `GET /issues?status=open` returned 200 with an empty collection, and both `GET /issues?sort=title` and `GET /issues?limit=51` returned 200. Those responses did not demonstrate the Module 4 behavior; the service needed the current `main` changes deployed before live verification.
+

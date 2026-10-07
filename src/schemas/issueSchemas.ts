@@ -43,3 +43,18 @@ export const addCommentSchema = z.object({
 });
 
 export type AddCommentInput = z.infer<typeof addCommentSchema>;
+
+export const listIssuesQuerySchema = z.object({
+  status: z.enum(["open", "in-progress", "closed"]).optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
+  classification: z
+    .enum(["unclassified", "approved", "unapproved", "duplicate"])
+    .optional(),
+  assignedTo: z.string().optional(),
+  q: z.string().optional(),
+  sort: z.enum(["createdOn", "-createdOn"]).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export type ListIssuesQuery = z.infer<typeof listIssuesQuerySchema>;

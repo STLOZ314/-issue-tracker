@@ -14,12 +14,13 @@ import {
   updateIssue,
 } from "../controllers/issuesController.js";
 import { attachCurrentUser } from "../middleware/currentUser.js";
-import { validateBody } from "../middleware/validate.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   addCommentSchema,
   assignIssueSchema,
   classifyIssueSchema,
   createIssueSchema,
+  listIssuesQuerySchema,
   setStatusSchema,
   setTestCaseResultSchema,
   updateIssueSchema,
@@ -27,7 +28,7 @@ import {
 
 const issuesRouter = Router();
 
-issuesRouter.get("/", listIssues);
+issuesRouter.get("/", validateQuery(listIssuesQuerySchema), listIssues);
 issuesRouter.get("/:id", getIssueById);
 issuesRouter.post(
   "/",
