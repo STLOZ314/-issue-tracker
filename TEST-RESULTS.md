@@ -78,5 +78,25 @@ Verified locally against `npm run dev` backed by MongoDB Atlas on 2026-10-07. Te
 
 Atlas Search index on `issueTracker.issues`: name `default`, mapping `{ "mappings": { "dynamic": true } }`, Atlas UI status `READY` (search index ready). The application startup completed `createIndex({ status: 1, createdOn: -1 })` before the local API began listening.
 
-Post-push Cloud Run check on 2026-10-07 against https://issue-tracker-ivnvgl25oa-uc.a.run.app: `GET /issues?status=open` returned 200 with an empty collection, and both `GET /issues?sort=title` and `GET /issues?limit=51` returned 200 instead of the expected 400. The service was still on revision `issue-tracker-00005-mqq`, so live Module 4 behavior is not verified. `gcloud builds triggers list` and `gcloud builds list --limit=5` returned no entries; this project has no configured Cloud Build redeployment pipeline.
+
+# Live Cloud Run Verification — 2026-10-07
+
+Service: https://issue-tracker-517911843323.us-central1.run.app. Deployed revision: `issue-tracker-00006-s5z`. Cloud Build `68a78faf-1dbc-4da6-ad75-01d6e22551bd` completed with `SUCCESS` after deploying current `main`.
+
+| Request | Expected Status | Actual Status | Notes / Response |
+| --- | --- | --- | --- |
+| `GET /issues?status=open` | 200 | 200 | Every returned issue had `status: "open"`. |
+| `GET /issues?status=open&priority=high` | 200 | 200 | Every returned issue matched both filters. |
+| `GET /issues?priority=medium` | 200 | 200 | Every returned issue had `priority: "medium"`. |
+| `GET /issues?classification=approved` | 200 | 200 | Returned approved issues only. |
+| `GET /issues?assignedTo=live-retest-alpha` | 200 | 200 | Returned only issues assigned to that user id. |
+| `GET /issues?status=closed&priority=high&classification=unapproved&assignedTo=live-retest-alpha` | 200 | 200 | Returned only the issue satisfying all four filters. |
+| `GET /issues?sort=-createdOn` | 200 | 200 | Results were newest-first. |
+| `GET /issues?sort=title` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"sort",...}]}`. |
+| `GET /issues?limit=51` | 400 | 400 | `{"error":"ValidationFailed","details":[{"path":"limit",...}]}`. |
+| `GET /issues?q=oRcHiD` | 200 | 200 | Case-insensitive search matched both `ORCHID` in a title and `Orchid` in the description of a separate issue whose title did not contain the word. |
+| `GET /issues?page=1&limit=2&sort=-createdOn` | 200 | 200 | Returned exactly two issues. |
+| `GET /issues?page=2&limit=2&sort=-createdOn` | 200 | 200 | Returned two different issues from the next page. |
+
+Six temporary production fixtures were removed; all cleanup requests returned 204. Atlas Search index on `issueTracker.issues` is named `default`, has dynamic mapping, and showed `READY` in the Atlas UI.
 
