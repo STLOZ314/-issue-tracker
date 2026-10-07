@@ -78,5 +78,5 @@ Verified locally against `npm run dev` backed by MongoDB Atlas on 2026-10-07. Te
 
 Atlas Search index on `issueTracker.issues`: name `default`, mapping `{ "mappings": { "dynamic": true } }`, Atlas UI status `READY` (search index ready). The application startup completed `createIndex({ status: 1, createdOn: -1 })` before the local API began listening.
 
-Pre-redeployment Cloud Run check on 2026-10-07: `GET /issues?status=open` returned 200 with an empty collection, and both `GET /issues?sort=title` and `GET /issues?limit=51` returned 200. Those responses did not demonstrate the Module 4 behavior; the service needed the current `main` changes deployed before live verification.
+Post-push Cloud Run check on 2026-10-07 against https://issue-tracker-ivnvgl25oa-uc.a.run.app: `GET /issues?status=open` returned 200 with an empty collection, and both `GET /issues?sort=title` and `GET /issues?limit=51` returned 200 instead of the expected 400. The service was still on revision `issue-tracker-00005-mqq`, so live Module 4 behavior is not verified. `gcloud builds triggers list` and `gcloud builds list --limit=5` returned no entries; this project has no configured Cloud Build redeployment pipeline.
 
