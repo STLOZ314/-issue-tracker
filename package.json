@@ -8,7 +8,7 @@
     "build": "tsc && npm install --prefix frontend && npm run build --prefix frontend",
     "gcp-build": "npm run build",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -29,11 +29,14 @@
     "@types/debug": "^4.1.13",
     "@types/express": "^5.0.6",
     "@types/node": "^26.5.0",
+    "@types/supertest": "^7.2.1",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.9.6",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.70.0"
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.3"
   }
 }

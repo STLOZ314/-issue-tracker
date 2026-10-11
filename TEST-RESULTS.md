@@ -100,3 +100,9 @@ Service: https://issue-tracker-517911843323.us-central1.run.app. Deployed revisi
 
 Six temporary production fixtures were removed; all cleanup requests returned 204. Atlas Search index on `issueTracker.issues` is named `default`, has dynamic mapping, and showed `READY` in the Atlas UI.
 
+# Day 31 Automated Test Coverage — 2026-10-11
+
+`npx vitest run` completed with 5 tests passing in `tests/warmup.test.ts`. Automated checks cover the arithmetic warm-up, `createIssueSchema` accepting a valid issue and rejecting a missing title or invalid priority, and `POST /issues` rejecting an empty body with 400 `ValidationFailed` through Supertest and a mocked database module.
+
+The previous manual results above are retained. `tests/issues.test.ts` was not present in the workspace, so the instructor-provided 33-test suite was not run; the remaining manually documented route and live Atlas Search checks are not yet covered by that suite here.
+
