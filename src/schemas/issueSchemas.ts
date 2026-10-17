@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const issueIdParamsSchema = z.object({
+  id: z.string().regex(/^[a-fA-F0-9]{24}$/, "Invalid issue id"),
+});
+
 export const createIssueSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
@@ -58,3 +62,11 @@ export const listIssuesQuerySchema = z.object({
 });
 
 export type ListIssuesQuery = z.infer<typeof listIssuesQuerySchema>;
+
+export const addTimeLogSchema = z.object({
+  hoursWorked: z
+    .number({ error: "hoursWorked must be a number" })
+    .gt(0, "hoursWorked must be greater than 0"),
+});
+
+export type AddTimeLogInput = z.infer<typeof addTimeLogSchema>;
