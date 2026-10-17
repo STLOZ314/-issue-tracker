@@ -2,24 +2,28 @@ import { Router } from "express";
 import {
   addComment,
   addTestCase,
+  addTimeLog,
   assignIssue,
   classifyIssue,
   createIssue,
   deleteComment,
   deleteIssue,
   getIssueById,
+  getTimeLogSummary,
   listIssues,
   setTestCaseResult,
   setIssueStatus,
   updateIssue,
 } from "../controllers/issuesController.js";
 import { attachCurrentUser } from "../middleware/currentUser.js";
-import { validateBody, validateQuery } from "../middleware/validate.js";
+import { validateBody, validateParams, validateQuery } from "../middleware/validate.js";
 import {
   addCommentSchema,
+  addTimeLogSchema,
   assignIssueSchema,
   classifyIssueSchema,
   createIssueSchema,
+  issueIdParamsSchema,
   listIssuesQuerySchema,
   setStatusSchema,
   setTestCaseResultSchema,
@@ -29,6 +33,11 @@ import {
 const issuesRouter = Router();
 
 issuesRouter.get("/", validateQuery(listIssuesQuerySchema), listIssues);
+issuesRouter.get(
+  "/:id/time-log/summary",
+  validateParams(issueIdParamsSchema),
+  getTimeLogSummary,
+);
 issuesRouter.get("/:id", getIssueById);
 issuesRouter.post(
   "/",
@@ -54,5 +63,11 @@ issuesRouter.patch("/:id/status", validateBody(setStatusSchema), setIssueStatus)
 issuesRouter.patch("/:id/classify", validateBody(classifyIssueSchema), classifyIssue);
 issuesRouter.patch("/:id/assign", validateBody(assignIssueSchema), assignIssue);
 issuesRouter.delete("/:id", deleteIssue);
+issuesRouter.post(
+  "/:id/time-log",
+  attachCurrentUser,
+  validateBody(addTimeLogSchema),
+  addTimeLog,
+);
 
 export default issuesRouter;
