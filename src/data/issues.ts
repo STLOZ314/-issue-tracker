@@ -3,6 +3,12 @@ export interface IssueUserRef {
   fullName: string;
 }
 
+export interface IssueTimeLogEntry {
+  userId: string;
+  hoursWorked: number;
+  loggedOn: Date;
+}
+
 export interface Issue {
   title: string;
   description: string;
@@ -15,5 +21,5 @@ export interface Issue {
   createdOn: Date;
   comments: unknown[];
   testCases: unknown[];
-  timeLog: unknown[];
+  timeLog: IssueTimeLogEntry[];
 }
