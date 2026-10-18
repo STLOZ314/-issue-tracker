@@ -2,9 +2,10 @@ import { randomUUID } from "crypto";
 import { NextFunction, Request, Response } from "express";
 import { Document, ObjectId } from "mongodb";
 import { getIssuesCollection } from "../db.js";
-import { Issue } from "../data/issues.js";
+import { Issue, IssueTimeLogEntry } from "../data/issues.js";
 import {
   AddCommentInput,
+  AddTimeLogInput,
   AssignIssueInput,
   ClassifyIssueInput,
   CreateIssueInput,
@@ -86,6 +87,84 @@ export async function getIssueById(
       return;
     }
     res.status(200).json(issue);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getTimeLogSummary(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const issue = await getIssuesCollection().findOne({ _id: objectId });
+    if (!issue) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    const hoursByUser = new Map<string, number>();
+    const totalHours = (issue.timeLog ?? []).reduce((total, entry) => {
+      hoursByUser.set(
+        entry.userId,
+        (hoursByUser.get(entry.userId) ?? 0) + entry.hoursWorked,
+      );
+      return total + entry.hoursWorked;
+    }, 0);
+
+    const byUser = Array.from(hoursByUser, ([userId, hours]) => ({
+      userId,
+      hours,
+    })).sort((a, b) => a.userId.localeCompare(b.userId));
+
+    res.status(200).json({
+      issueId: objectId.toHexString(),
+      totalHours,
+      byUser,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function addTimeLog(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const { hoursWorked } = req.body as AddTimeLogInput;
+    const timeLogEntry: IssueTimeLogEntry = {
+      userId: req.user.userId,
+      hoursWorked,
+      loggedOn: new Date(),
+    };
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      {
+        $push: {
+          timeLog: {
+            $each: [timeLogEntry],
+            $sort: { loggedOn: 1 },
+          },
+        },
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }
