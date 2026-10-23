@@ -108,17 +108,24 @@ The previous manual results above are retained. `tests/issues.test.ts` was not p
 
 # Test Results — Lab 05-01 (Better Auth Setup) — 2026-10-23
 
-Local checks were performed against `npm run dev` with Better Auth configured in
-the ignored `.env`. No sign-up request was sent, so no test account was created.
+All manual checks were run after starting a fresh `npm run dev` server with
+Better Auth configured in the ignored `.env`. A randomly generated test email
+and password were used; the temporary records were removed after verification.
 
 | Request / Check | Expected | Actual | Notes |
 | --- | --- | --- | --- |
-| `GET /` | 200 with landing-page HTML | 200 | Public landing page is available without a session. |
-| `GET /health` | 200 | 200 | `{"status":"ok"}`. |
-| `GET /api/auth/get-session` without a cookie | 200 with `null` | 200 | No signed-in session was present. |
-| `npm test` | All tests pass | 12 passed | Vitest uses the shared auth stand-in in `tests/setup.ts`; database connection reuse has a separate mocked test. |
+| `GET /` without a cookie | 200 HTML | 200 HTML | The landing page remains public. |
+| `POST /api/auth/sign-up/email` with valid details and `Origin: http://localhost:5173` | 200 and session cookie | 200; `better-auth.session_token` set | Used a temporary, generated test account. |
+| `GET /api/auth/get-session` with sign-up cookie | 200 with session/user | 200 with signed-in user | Session user matched the new test account. |
+| `GET /api/auth/get-session` without a cookie | 200 and `null` | 200 `null` | Verified before sign-up and again after sign-out. |
+| `POST /api/auth/sign-out` | 200 `{"success":true}` | 200 `{"success":true}` | Session was ended. |
+| `POST /api/auth/sign-in/email` with correct password | 200 and session cookie | 200; session cookie set | `GET /api/auth/get-session` then returned the user. |
+| `POST /api/auth/sign-in/email` with wrong password | 401 `INVALID_EMAIL_OR_PASSWORD` | 401 `INVALID_EMAIL_OR_PASSWORD` | Response did not distinguish email from password. |
+| Sign up with duplicate email | 422 `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` | 422 `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` | |
+| Sign up with a password shorter than 8 characters | 400 `PASSWORD_TOO_SHORT` | 400 `PASSWORD_TOO_SHORT` | |
+| Sign in with a cookie but no `Origin` header | 403 `MISSING_OR_NULL_ORIGIN` | 403 `MISSING_OR_NULL_ORIGIN` | |
+| `GET /` while signed in and after sign-out | 200 HTML both times | 200 HTML both times | Landing page is public in either state. |
+| MongoDB `user`, `account`, and `session` records after sign-up | Records exist; account password is a hash | All three records existed; password field was a long salted hash (over 100 characters, colon-separated), not the submitted password | Hash value was not copied. Temporary user, account, and session were deleted after verification. |
+| `npm test` | All tests pass | 12 passed across 4 files | Tests use the shared auth stand-in from `tests/setup.ts`; no test uses Atlas credentials. |
 | `npx tsc --noEmit` | No TypeScript errors | Passed | |
 | `npm run build` | Backend and frontend build | Passed | |
-
-Postman account flows, password/duplicate-email errors, and MongoDB auth
-collections were not manually verified in this pass.
