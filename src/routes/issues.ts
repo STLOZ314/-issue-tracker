@@ -15,8 +15,11 @@ import {
   setIssueStatus,
   updateIssue,
 } from "../controllers/issuesController.js";
-import { attachCurrentUser } from "../middleware/currentUser.js";
-import { validateBody, validateParams, validateQuery } from "../middleware/validate.js";
+import {
+  validateBody,
+  validateParams,
+  validateQuery,
+} from "../middleware/validate.js";
 import {
   addCommentSchema,
   addTimeLogSchema,
@@ -39,19 +42,9 @@ issuesRouter.get(
   getTimeLogSummary,
 );
 issuesRouter.get("/:id", getIssueById);
-issuesRouter.post(
-  "/",
-  attachCurrentUser,
-  validateBody(createIssueSchema),
-  createIssue,
-);
-issuesRouter.post(
-  "/:id/comments",
-  attachCurrentUser,
-  validateBody(addCommentSchema),
-  addComment,
-);
-issuesRouter.post("/:id/test-cases", attachCurrentUser, addTestCase);
+issuesRouter.post("/", validateBody(createIssueSchema), createIssue);
+issuesRouter.post("/:id/comments", validateBody(addCommentSchema), addComment);
+issuesRouter.post("/:id/test-cases", addTestCase);
 issuesRouter.patch(
   "/:id/test-cases/:testCaseId",
   validateBody(setTestCaseResultSchema),
@@ -59,15 +52,18 @@ issuesRouter.patch(
 );
 issuesRouter.delete("/:id/comments/:commentId", deleteComment);
 issuesRouter.patch("/:id", validateBody(updateIssueSchema), updateIssue);
-issuesRouter.patch("/:id/status", validateBody(setStatusSchema), setIssueStatus);
-issuesRouter.patch("/:id/classify", validateBody(classifyIssueSchema), classifyIssue);
+issuesRouter.patch(
+  "/:id/status",
+  validateBody(setStatusSchema),
+  setIssueStatus,
+);
+issuesRouter.patch(
+  "/:id/classify",
+  validateBody(classifyIssueSchema),
+  classifyIssue,
+);
 issuesRouter.patch("/:id/assign", validateBody(assignIssueSchema), assignIssue);
 issuesRouter.delete("/:id", deleteIssue);
-issuesRouter.post(
-  "/:id/time-log",
-  attachCurrentUser,
-  validateBody(addTimeLogSchema),
-  addTimeLog,
-);
+issuesRouter.post("/:id/time-log", validateBody(addTimeLogSchema), addTimeLog);
 
 export default issuesRouter;
