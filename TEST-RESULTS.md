@@ -106,3 +106,19 @@ Six temporary production fixtures were removed; all cleanup requests returned 20
 
 The previous manual results above are retained. `tests/issues.test.ts` was not present in the workspace, so the instructor-provided 33-test suite was not run; the remaining manually documented route and live Atlas Search checks are not yet covered by that suite here.
 
+# Test Results — Lab 05-01 (Better Auth Setup) — 2026-10-23
+
+Local checks were performed against `npm run dev` with Better Auth configured in
+the ignored `.env`. No sign-up request was sent, so no test account was created.
+
+| Request / Check | Expected | Actual | Notes |
+| --- | --- | --- | --- |
+| `GET /` | 200 with landing-page HTML | 200 | Public landing page is available without a session. |
+| `GET /health` | 200 | 200 | `{"status":"ok"}`. |
+| `GET /api/auth/get-session` without a cookie | 200 with `null` | 200 | No signed-in session was present. |
+| `npm test` | All tests pass | 12 passed | Vitest uses the shared auth stand-in in `tests/setup.ts`; database connection reuse has a separate mocked test. |
+| `npx tsc --noEmit` | No TypeScript errors | Passed | |
+| `npm run build` | Backend and frontend build | Passed | |
+
+Postman account flows, password/duplicate-email errors, and MongoDB auth
+collections were not manually verified in this pass.
