@@ -147,3 +147,27 @@ and password were used; the temporary records were removed after verification.
 | Fresh-server `POST /issues` without a cookie | 401 before controller/validation work | 401 with expected JSON response | |
 | `npm test` | All tests pass | 18 passed across 5 files | Shared Vitest setup provides an authenticated fixture; guard tests override it to simulate no session. |
 | `npx tsc --noEmit` | No TypeScript errors | Passed | |
+
+# Lab 05-02 Re-Test — 2026-10-24
+
+The local server was stopped and restarted before the signed-out and signed-in
+requests. A randomly generated test account was used; its account, session, and
+temporary issue were removed after testing.
+
+| Check | Expected | Actual | Notes |
+| --- | --- | --- | --- |
+| Signed out: `GET /issues` | 401 `{"error":"Please sign in first"}` | 401 with expected JSON | |
+| Signed out: `GET /issues/64f000000000000000000001` | 401 before issue lookup | 401 with expected JSON | |
+| Signed out: `POST /issues` | 401 `{"error":"Please sign in first"}` | 401 with expected JSON | |
+| Signed out: `GET /api/me` | 401 `{"error":"Please sign in first"}` | 401 with expected JSON | |
+| Signed out: `GET /` | 200 HTML | 200 HTML | |
+| Signed out: `GET /health` | 200 | 200 `{"status":"ok"}` | |
+| Signed out: `GET /api/auth/get-session` | 200 `null` | 200 `null` | |
+| Signed in: `GET /api/me` | 200 with real id and full name | 200 `{"userId":"6adce6d9935b8853185fdcdb","fullName":"Retest User"}` | Temporary test account, removed after test. |
+| Signed in: `GET /issues` | 200 issue list | 200 `[]` | No pre-existing issues were returned. |
+| Signed in: `POST /issues` with fake author in request body | 201 with authenticated user as author | 201; author was `{"userId":"6adce6d9935b8853185fdcdb","fullName":"Retest User"}` | Did not use body author `hacker` / `Not Me`; temporary issue deleted. |
+| Old session cookie after sign-out: `GET /issues` | 401 | 401 `{"error":"Please sign in first"}` | Sign-out returned 200 `{"success":true}` first. |
+| Temporary experiment: mount guard after router, signed-out `GET /issues` | Demonstrate route-order bug | 200 `[]` | Restored `app.use("/issues", requireAuth, issuesRouter)` immediately afterward. |
+| Temporary experiment: fake-user middleware after guard on `POST /issues` | Demonstrate fake identity overwrites session | 201; author was `{"userId":"user-placeholder-001","fullName":"Jordan Casey"}` instead of the signed-in test user | Removed the temporary middleware afterward; deleted test issue and account records. |
+| `npm test` including `tests/auth.test.ts` | All tests pass | 21 passed across 5 files | `tests/auth.test.ts` has a file-local auth mock and covers anonymous `/issues`, anonymous/authenticated `/api/me`, and public `/health`. |
+| `npx tsc --noEmit` | No TypeScript errors | Passed | |
