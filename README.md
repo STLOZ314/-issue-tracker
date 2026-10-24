@@ -33,8 +33,15 @@ The API exposes Better Auth's email/password endpoints:
 Send `{"name":"Alex Example","email":"alex@example.com","password":"a-long-password"}`
 to sign up, or `{"email":"alex@example.com","password":"a-long-password"}` to
 sign in. Retain the returned cookie for subsequent requests. The landing page
-and issue routes remain public; this authentication setup does not yet enforce
-authorization.
+remains public. Authentication does not yet define roles or permissions.
+
+### Protected issue routes
+
+All `/issues` endpoints require a valid Better Auth session and return
+`401 {"error":"Please sign in first"}` when the request has no valid session.
+The authenticated user's id and name populate `req.user` and are used for
+issue authorship and activity attribution. `/`, `/health`, and `/api/auth/*`
+remain public so visitors can reach the application and sign in.
 
 ## Module 4 Deployment — 2026-10-07
 

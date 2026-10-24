@@ -129,3 +129,21 @@ and password were used; the temporary records were removed after verification.
 | `npm test` | All tests pass | 12 passed across 4 files | Tests use the shared auth stand-in from `tests/setup.ts`; no test uses Atlas credentials. |
 | `npx tsc --noEmit` | No TypeScript errors | Passed | |
 | `npm run build` | Backend and frontend build | Passed | |
+
+# Test Results — Lab 05-02 (Protect Your Routes) — 2026-10-23
+
+| Automated check | Expected | Actual | Notes |
+| --- | --- | --- | --- |
+| Unauthenticated `GET /issues` | 401 `{"error":"Please sign in first"}` | 401 with expected response | Issue collection was not accessed. |
+| Authenticated `POST /issues` | 201 with signed-in person as author | 201; author id/name matched the mocked Better Auth session | A request-supplied author is not used. |
+| Fresh-server `GET /api/me` with sign-in cookie | 200 with real user id and name | 200 `{"userId":"6adb9189e06f87a2cd5d44dc","fullName":"Dana Dev"}` | Temporary test user; removed after verification. |
+| Fresh-server `GET /issues` with sign-in cookie | 200 issue list | 200 `[]` | Atlas issue collection had no remaining issues after temporary test cleanup. |
+| Fresh-server `POST /issues` with sign-in cookie and a forged body author | 201; author from session | 201; response author matched authenticated user, not the forged body | Temporary test issue was deleted after verification. |
+| Fresh-server `GET /` and `GET /health` | Public, 200 | 200 HTML and 200 `{"status":"ok"}` | |
+| Fresh-server `GET /api/auth/get-session` without a cookie | 200 `null` | 200 `null` | Sign-in endpoints remain public. |
+| Fresh-server `GET /api/me` without a cookie | 401 `{"error":"Please sign in first"}` | 401 with expected JSON response | |
+| Fresh-server `GET /issues` without a cookie | 401 `{"error":"Please sign in first"}` | 401 with expected JSON response | |
+| Fresh-server `GET /issues/64f000000000000000000001` without a cookie | 401 before issue lookup | 401 with expected JSON response | |
+| Fresh-server `POST /issues` without a cookie | 401 before controller/validation work | 401 with expected JSON response | |
+| `npm test` | All tests pass | 18 passed across 5 files | Shared Vitest setup provides an authenticated fixture; guard tests override it to simulate no session. |
+| `npx tsc --noEmit` | No TypeScript errors | Passed | |
