@@ -171,3 +171,49 @@ temporary issue were removed after testing.
 | Temporary experiment: fake-user middleware after guard on `POST /issues` | Demonstrate fake identity overwrites session | 201; author was `{"userId":"user-placeholder-001","fullName":"Jordan Casey"}` instead of the signed-in test user | Removed the temporary middleware afterward; deleted test issue and account records. |
 | `npm test` including `tests/auth.test.ts` | All tests pass | 21 passed across 5 files | `tests/auth.test.ts` has a file-local auth mock and covers anonymous `/issues`, anonymous/authenticated `/api/me`, and public `/health`. |
 | `npx tsc --noEmit` | No TypeScript errors | Passed | |
+
+# Lab 05-03 - Roles and Permissions - 2026-10-28
+
+Six temporary accounts (Eve, Bo, Quinn, Pat, Tia, Nate; password `password123`) were signed up through
+`POST /api/auth/sign-up/email`. Tia was promoted to `technicalManager` by hand in the `user` collection
+(`matchedCount` 1, `modifiedCount` 1). The other roles were handed out through `PATCH /users/:id/role`.
+Requests were sent from a script with the same method, URL, headers and body as the Postman requests.
+The accounts stay in the database until Lab 05-04.
+
+| Check | Expected | Actual | Notes |
+| --- | --- | --- | --- |
+| New sign-up `GET /api/me` | `"role":"user"` | `"role":"user"` for all six | The plugin's label for "no role yet". |
+| Nate (no role): `GET /api/me` | 200, role `user` | 200 | |
+| Nate: `GET /issues` | 200 | 200 `[]` | Reading needs only a sign-in. |
+| Nate: `POST /issues` | 403 `Your role may not issue:create` | 403 `{"error":"Your role may not issue:create"}` | |
+| Nate: `POST /issues/64f000000000000000000001/comments` | 403 `Your role may not comment:create` | 403 `{"error":"Your role may not comment:create"}` | Guard answers before the id is looked up. |
+| Tia: `PATCH /users/<id>/role` developer / businessAnalyst / qualityAnalyst / productManager | 200 each | 200 each | Eve, Bo, Quinn, Pat. |
+| Tia: role `wizard` | 400 ValidationFailed | 400 `ValidationFailed` | |
+| Tia: change her own role | 400 `You cannot change your own role` | 400 `{"error":"You cannot change your own role"}` | |
+| Tia: unknown user id | 404 `User not found` | 404 `{"error":"User not found"}` | |
+| Eve: `GET /api/me` after the change, no new sign-in | role `developer` | `"role":"developer"` | Role is read from the database each time. |
+| Eve creates an issue | 201 | 201 | |
+| Eve: classify | 403 `issue:classify` | 403 `Your role may not issue:classify` | |
+| Bo: classify | 200 | 200, `classification` `approved` | |
+| Eve: status `closed` | 403 `issue:close` | 403 `Your role may not issue:close` | |
+| Eve: status `in-progress` | 200 | 200 | No role needed; ownership is Lab 05-04. |
+| Bo: status `closed` | 200 | 200 | |
+| Eve: assign | 403 `issue:assign` | 403 | |
+| Pat: assign | 200 | 200 | |
+| Eve: add test case | 403 `testCase:create` | 403 | |
+| Quinn: add test case | 201 | 201 | |
+| Bo: set test case result | 403 `testCase:setResult` | 403 | |
+| Quinn: set test case result | 200 | 200 | |
+| Pat: `DELETE /issues/<id>` | 403 `issue:delete` | 403 | |
+| Tia: `DELETE /issues/<id>` | 204, then 404 | 204, then 404 | |
+| Signed out: classify | 401, not 403 | 401 | "Who are you?" is answered before "may you?". |
+| Break it: misspell permission `"clsoe"` | `tsc` refuses | `TS2345: Argument of type '"clsoe"' is not assignable ...` | Fixed afterwards. |
+| Break it: remove the classify guard, Eve classifies | 200 with no warning | 200, `classification` `approved` | Guard restored; Eve gets 403 again. |
+| Break it: Nate promotes himself | 403 `user:set-role` | 403 `{"error":"Your role may not user:set-role"}` | |
+| Break it: sign-up with `"role":"technicalManager"` | 400 `FIELD_NOT_ALLOWED` | 400 `{"message":"role is not allowed to be set","code":"FIELD_NOT_ALLOWED"}` | No account was created. |
+| Break it: change Quinn's role in the database, repeat setResult without signing in again | 403 | 403 `Your role may not testCase:setResult` | Role changed back to `qualityAnalyst` afterwards. |
+| `npm test` | All tests pass | 30 passed across 6 files | Includes `tests/permissions.test.ts`. |
+| `npx tsc --noEmit` | No errors | Passed | |
+
+The class chart was used unchanged because `docs/PERMISSIONS.md` is not in the repository, so the
+expected results above follow the class chart.
