@@ -45,7 +45,11 @@ describe("authentication", () => {
     const response = await request(app).get("/api/me");
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ userId: "u1", fullName: "Dana Dev" });
+    expect(response.body).toEqual({
+      userId: "u1",
+      fullName: "Dana Dev",
+      role: "none",
+    });
   });
 
   it("keeps /health public", async () => {

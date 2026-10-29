@@ -1,7 +1,9 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { admin } from "better-auth/plugins";
 
 import { getDb } from "./db.js";
+import { ac, roles } from "./permissions.js";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -17,4 +19,13 @@ export const auth = betterAuth({
   trustedOrigins: [requireEnv("CLIENT_ORIGIN")],
   database: mongodbAdapter(db),
   emailAndPassword: { enabled: true },
+  plugins: [
+    admin({
+      ac,
+      roles,
+      // No defaultRole on purpose: a new sign-up has no role
+      // until a Technical Manager gives one.
+      adminRoles: ["technicalManager"],
+    }),
+  ],
 });

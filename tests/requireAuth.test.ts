@@ -54,6 +54,7 @@ describe("issue route authentication", () => {
     expect(response.body).toEqual({
       userId: "user-placeholder-001",
       fullName: "Jordan Casey",
+      role: "none",
     });
   });
 

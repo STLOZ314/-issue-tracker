@@ -8,6 +8,10 @@ vi.mock("../src/auth.js", () => ({
         session: {},
         user: { id: "user-placeholder-001", name: "Jordan Casey" },
       }),
+      userHasPermission: vi.fn().mockResolvedValue({ success: true }),
+      setRole: vi.fn().mockResolvedValue({
+        user: { id: "u9", role: "developer" },
+      }),
     },
   },
 }));
