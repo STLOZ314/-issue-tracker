@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/logger.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import issuesRouter from "./routes/issues.js";
+import { usersRouter } from "./routes/users.js";
 
 export const app = express();
 
@@ -21,10 +22,11 @@ app.get("/health", (_req, res) => {
 });
 
 app.get("/api/me", requireAuth, (req, res) => {
-  res.json(req.user);
+  res.json({ ...req.user, role: req.role });
 });
 
 app.use("/issues", requireAuth, issuesRouter);
+app.use("/users", requireAuth, usersRouter);
 
 app.use(express.static(path.join(import.meta.dirname, "../frontend/dist")));
 

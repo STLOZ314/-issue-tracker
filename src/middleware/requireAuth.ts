@@ -18,6 +18,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
       userId: session.user.id,
       fullName: session.user.name,
     };
+    req.role = (session.user as { role?: string | null }).role ?? "none";
     next();
   } catch (error) {
     next(error);
