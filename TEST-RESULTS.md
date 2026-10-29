@@ -215,5 +215,5 @@ The accounts stay in the database until Lab 05-04.
 | `npm test` | All tests pass | 30 passed across 6 files | Includes `tests/permissions.test.ts`. |
 | `npx tsc --noEmit` | No errors | Passed | |
 
-The class chart was used unchanged because `docs/PERMISSIONS.md` is not in the repository, so the
-expected results above follow the class chart.
+The permissions in `src/permissions.ts` match the chart in `docs/PERMISSIONS.md`, which uses the class chart unchanged.
+The expected results above follow that chart.
