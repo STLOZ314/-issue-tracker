@@ -8,6 +8,8 @@ A RESTful API issue tracker built with Node.js, Express, TypeScript, and React.
 - **Health Check**: https://issue-tracker-517911843323.us-central1.run.app/health
 - **Issues Endpoint**: https://issue-tracker-517911843323.us-central1.run.app/issues
 
+Live: https://issue-tracker-517911843323.us-central1.run.app (sign-in, roles and ownership, Lab 05-04)
+
 The live service is backed by the MongoDB Atlas `issueTracker.issues` collection.
 
 ## Sign-in

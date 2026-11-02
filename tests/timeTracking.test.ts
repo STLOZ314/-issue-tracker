@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import { ObjectId } from "mongodb";
 
@@ -28,7 +28,7 @@ describe("time tracking endpoints", () => {
       _id: id,
       timeLog: [
         {
-          userId: "user-placeholder-001",
+          userId: "6aad780ce470879405ff14af",
           hoursWorked: 1.5,
           loggedOn: new Date(),
         },
@@ -43,7 +43,7 @@ describe("time tracking endpoints", () => {
     expect(response.status).toBe(201);
     expect(response.body.timeLog).toHaveLength(1);
     expect(response.body.timeLog[0]).toMatchObject({
-      userId: "user-placeholder-001",
+      userId: "6aad780ce470879405ff14af",
       hoursWorked: 1.5,
     });
     expect(response.body.timeLog[0].loggedOn).toBeTruthy();
@@ -54,7 +54,7 @@ describe("time tracking endpoints", () => {
           timeLog: {
             $each: [
               expect.objectContaining({
-                userId: "user-placeholder-001",
+                userId: "6aad780ce470879405ff14af",
                 hoursWorked: 1.5,
               }),
             ],

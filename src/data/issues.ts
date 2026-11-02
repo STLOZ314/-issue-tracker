@@ -9,6 +9,14 @@ export interface IssueTimeLogEntry {
   loggedOn: Date;
 }
 
+export interface IssueComment {
+  _id: string;
+  userId: string;
+  fullName: string;
+  comment: string;
+  createdOn: Date;
+}
+
 export interface Issue {
   title: string;
   description: string;
@@ -19,7 +27,11 @@ export interface Issue {
   author: IssueUserRef;
   assignedTo?: IssueUserRef;
   createdOn: Date;
-  comments: unknown[];
+  updatedBy?: IssueUserRef;
+  updatedAt?: Date;
+  closedBy?: IssueUserRef;
+  closedAt?: Date;
+  comments: IssueComment[];
   testCases: unknown[];
   timeLog: IssueTimeLogEntry[];
 }

@@ -1,4 +1,4 @@
-import request from "supertest";
+﻿import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
 
 const { fakeCollection } = vi.hoisted(() => ({
@@ -52,8 +52,8 @@ describe("issue route authentication", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      userId: "user-placeholder-001",
-      fullName: "Jordan Casey",
+      userId: "6aad780ce470879405ff14af",
+      fullName: "Miyabi Hoshimi",
       role: "none",
     });
   });
