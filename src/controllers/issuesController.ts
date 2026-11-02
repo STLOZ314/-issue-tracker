@@ -205,15 +205,23 @@ export async function updateIssue(
   try {
     const updates = req.body as UpdateIssueInput;
 
-    const issues = getIssuesCollection();
-    const result = await issues.updateOne({ _id: objectId }, { $set: updates });
-    if (result.matchedCount === 0) {
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      {
+        $set: {
+          ...updates,
+          updatedBy: req.user,
+          updatedAt: new Date(),
+        },
+      },
+      { returnDocument: "after" },
+    );
+    if (!result) {
       res.status(404).json({ error: "Issue not found" });
       return;
     }
 
-    const issue = await issues.findOne({ _id: objectId });
-    res.status(200).json(issue);
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }
@@ -229,9 +237,19 @@ export async function setIssueStatus(
 
   try {
     const { status } = req.body as SetStatusInput;
+    const now = new Date();
     const result = await getIssuesCollection().findOneAndUpdate(
       { _id: objectId },
-      { $set: { status } },
+      {
+        $set: {
+          status,
+          updatedBy: req.user,
+          updatedAt: now,
+          ...(status === "closed"
+            ? { closedBy: req.user, closedAt: now }
+            : {}),
+        },
+      },
       { returnDocument: "after" },
     );
     if (!result) {
@@ -256,7 +274,13 @@ export async function classifyIssue(
     const { classification } = req.body as ClassifyIssueInput;
     const result = await getIssuesCollection().findOneAndUpdate(
       { _id: objectId },
-      { $set: { classification } },
+      {
+        $set: {
+          classification,
+          updatedBy: req.user,
+          updatedAt: new Date(),
+        },
+      },
       { returnDocument: "after" },
     );
     if (!result) {
@@ -281,7 +305,13 @@ export async function assignIssue(
     const { userId, fullName } = req.body as AssignIssueInput;
     const result = await getIssuesCollection().findOneAndUpdate(
       { _id: objectId },
-      { $set: { assignedTo: { userId, fullName } } },
+      {
+        $set: {
+          assignedTo: { userId, fullName },
+          updatedBy: req.user,
+          updatedAt: new Date(),
+        },
+      },
       { returnDocument: "after" },
     );
     if (!result) {
