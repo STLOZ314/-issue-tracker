@@ -217,3 +217,54 @@ The accounts stay in the database until Lab 05-04.
 
 The permissions in `src/permissions.ts` match the chart in `docs/PERMISSIONS.md`, which uses the class chart unchanged.
 The expected results above follow that chart.
+
+# Lab 05-04 - Ownership and Audit Trail - 2026-11-01
+
+The local server was started for these checks. Requests used the six Lab 05-03 accounts
+and were sent with the same methods, URLs, headers and bodies as the Postman steps.
+The temporary issue was deleted after testing (204). The six accounts remain for
+the rest of Lab 05-04.
+
+| Check | Expected | Actual | Notes |
+| --- | --- | --- | --- |
+| Eve creates an issue | 201; author is Eve | 201; author was `Eve Dev` | Temporary issue. |
+| Eve edits her issue | 200; `updatedBy` is Eve and `updatedAt` is set | 200; `updatedBy` was `Eve Dev`; `updatedAt` was set | |
+| Bo and Nate edit Eve's issue | 403 `Only the author may edit this issue` | Both 403 with that JSON error | |
+| Bo edits an unknown issue id | 404 `Issue not found` | 404 with that JSON error | Lookup precedes ownership check. |
+| Eve edits with id `abc` | 400 `Invalid issue id` | 400 with that JSON error | |
+| Eve edits with a forged `author` in the body | 200; author remains Eve | 200; author remained `Eve Dev` | Unknown author input was stripped. |
+| Eve moves an unassigned issue to `in-progress` | 403 assignee error | 403 `Only the person this issue is assigned to may do that` | |
+| Eve, a Developer, assigns herself | 403 hand-off error | 403 `Only a manager, or the person this issue is assigned to, may assign it` | |
+| Pat assigns Nate, Pat, or Tia | 400 assignable-role error | Each 400 `Issues can only be assigned to a Developer, Business Analyst or Quality Analyst` | |
+| Pat assigns an unknown or malformed user id | 404 `User not found` | Both 404 `User not found` | |
+| Pat assigns Eve | 200; `assignedTo` is Eve and `updatedBy` is Pat | 200; `assignedTo` was `Eve Dev`, `updatedBy` was `Pat Manager` | |
+| Eve (assignee) moves the issue to `in-progress`; Bo (not assignee) tries | Eve 200; Bo 403 assignee error | Eve 200; Bo 403 with the expected JSON error | |
+| Eve, without `issue:close`, closes the issue | 403 `Your role may not issue:close` | 403 with that JSON error | |
+| Quinn adds a test case before assignment | 403 assignee error | 403 with the expected JSON error | She has the role, not the assignment. |
+| Pat assigns Quinn; Quinn adds and marks a test case | 200, then 201, then 200 | 200, 201, 200 | |
+| Eve tries to hand off while no longer assigned; Quinn hands off | Eve 403; Quinn 200 | Eve 403 with hand-off error; Quinn 200 | |
+| Quinn changes test result after hand-off | 403 assignee error | 403 with the expected JSON error | |
+| Bo and Nate delete Eve's comment; Eve deletes her own; Tia deletes Bo's | 403, 403, 200, 200 | All four statuses matched | 403s used `Only the comment's author or a Technical Manager may delete it`. |
+| Bo closes the issue while not assigned | 200; `closedBy` and `updatedBy` are Bo | 200; both were `Bo Analyst` | `updatedAt` and `closedAt` were equal. |
+| Cleanup: Tia deletes the temporary issue | 204 | 204 | |
+| `npx tsc --noEmit` | No errors | Passed | |
+| `npm test` | All tests pass | 35 passed across 7 files | Includes `tests/issueRules.test.ts`. |
+
+
+### Step 10 - Break it on purpose
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Remove `requireIssueRule(canEditIssue, ...)` from `PATCH /:id`; Bo edits Eve's issue | 200 (Bo rewrites someone else's work) | 200; title changed, no error | The server did not crash. Rule restored; Bo then got 403. |
+| Bo closes with a forged `closedBy` in the body | 200; `closedBy` stays Bo | 200; `closedBy` was `Bo Analyst` | The server stamps from the session. |
+| Pat assigns Nate (no role), Pat, Tia | 400 each | 400 each with the assignable-roles message | Assigning Eve returned 200. |
+| Tia edits Eve's issue | 403 `Only the author may edit this issue` | 403 with that message | A manager's role does not make her the author. |
+| `CLIENT_ORIGIN` set to `http://localhost:9999`; sign-out sent with `Origin: http://localhost:5173` | 403 `{"message":"Invalid origin","code":"INVALID_ORIGIN"}` | 403 with exactly that body | `.env` restored to `http://localhost:5173` and the server restarted. |
+
+### Step 11 and 12 - Provided tests, compile and build
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Provided `tests/setup.ts`, `tests/issues.test.ts`, `tests/ownership.test.ts` installed | All pass | 82 passed across 9 files | `updateIssue` was changed to `findOneAndUpdate` to match the provided test. Two older tests had their stand-in user id and name updated. |
+| `npx tsc --noEmit` | No errors | Passed | |
+| `npm run build` | No errors | Passed | |
