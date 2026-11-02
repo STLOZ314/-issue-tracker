@@ -268,3 +268,26 @@ the rest of Lab 05-04.
 | Provided `tests/setup.ts`, `tests/issues.test.ts`, `tests/ownership.test.ts` installed | All pass | 82 passed across 9 files | `updateIssue` was changed to `findOneAndUpdate` to match the provided test. Two older tests had their stand-in user id and name updated. |
 | `npx tsc --noEmit` | No errors | Passed | |
 | `npm run build` | No errors | Passed | |
+
+### Part 2 - Live service (revision issue-tracker-00010-xm4)
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| First live check after the merge | 401 on `/issues` | 200 `[]` on `/issues` and 404 on `/api/me` | Merging did not redeploy. The secret variable was also misnamed (`BETTER_AUTH_SECRET:` with a colon). Renamed it with a new 64-character secret, then ran `gcloud run deploy --source .` from `main`. |
+| `GET /health` | 200 | 200 `{"status":"ok"}` | |
+| `GET /issues` with no cookie | 401 `Please sign in first` | 401 `{"error":"Please sign in first"}` | |
+| Front end `GET /` | 200 | 200 | |
+| Eve signs in (`POST /api/auth/sign-in/email`, Origin = Service URL) | 200, `__Secure-` cookie | 200; cookie `__Secure-better-auth.session_token`, `HttpOnly; Secure; SameSite=Lax` | |
+| Eve `GET /api/me` | 200, Eve Dev, developer | 200 `{"fullName":"Eve Dev","role":"developer"}` | |
+| Nate `POST /issues` | 403 `Your role may not issue:create` | 403 with that error | |
+| Eve `POST /issues` | 201, author Eve | 201, author `Eve Dev` | |
+| Bo `PATCH` Eve's issue | 403 `Only the author may edit this issue` | 403 with that error | |
+| Eve `PATCH` her issue | 200, `updatedBy` Eve | 200, title changed, `updatedBy` `Eve Dev` | |
+| Eve `POST /api/auth/sign-out`, then `GET /issues` | `{"success":true}`, then 401 | 200 `{"success":true}`, then 401 | |
+| Cleanup: Tia deletes the live test issue | 204 | 204 | One sign-in got 429 (rate limit); a retry after a minute worked. |
+
+### Step 17 - Cleanup of test accounts
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Delete the six test accounts from `issueTracker` | session: varies; account: 6; user: 6 | session `deletedCount: 70`; account `deletedCount: 6`; user `deletedCount: 6` | Run with the lab's filters on the six emails only. A recount of those emails returned 0. |
