@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/logger.js";
 import { requireAuth } from "./middleware/requireAuth.js";
 import issuesRouter from "./routes/issues.js";
+import triageRouter from "./routes/triage.js";
 import { usersRouter } from "./routes/users.js";
 
 export const app = express();
@@ -26,6 +27,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 });
 
 app.use("/issues", requireAuth, issuesRouter);
+app.use("/triage", requireAuth, triageRouter);
 app.use("/users", requireAuth, usersRouter);
 
 app.use(express.static(path.join(import.meta.dirname, "../frontend/dist")));
