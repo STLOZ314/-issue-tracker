@@ -19,6 +19,7 @@
 | Delete an issue | issue:delete |  |  |  |  | ✔ | Judgment: cleanup only; in tension with Req 10 |
 | Change someone's role | user:set-role |  |  |  |  | ✔ | Judgment: Req 2 never says who |
 | Log hours on an issue | timeLog:create | ✔ |  |  |  |  | Req 8 |
+| Delete a test case | testCase:delete |  |  | ✔ |  |  | Judgment: Req 7 never says remove; a mistaken test case is cleaned up by the Quality Analyst who owns it |
 
 A person who is signed in but has no role yet can read issues and nothing else.
 
@@ -31,6 +32,7 @@ A person who is signed in but has no role yet can read issues and nothing else.
 | Add a test case or mark a result | Only on an issue assigned to that Quality Analyst | Note |
 | Log hours | Only on an issue assigned to that Developer | Note |
 | Delete a comment | The comment's author, or a Technical Manager (comment:deleteAny) | Judgment |
+| Delete a test case | Only the assignee | Judgment |
 
 ## Gaps and judgment calls
 
