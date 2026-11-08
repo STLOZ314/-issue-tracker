@@ -415,6 +415,42 @@ export async function setTestCaseResult(
   }
 }
 
+export async function deleteTestCase(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const testCaseId = req.params.testCaseId as string;
+    const exists = (req.issue.testCases as { _id: string }[]).some(
+      (tc) => tc._id === testCaseId,
+    );
+    if (!exists) {
+      res.status(404).json({ error: "Test case not found" });
+      return;
+    }
+
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      {
+        $pull: { testCases: { _id: testCaseId } },
+        $set: { updatedBy: req.user, updatedAt: new Date() },
+      },
+      { returnDocument: "after" },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function deleteComment(
   req: Request,
   res: Response,

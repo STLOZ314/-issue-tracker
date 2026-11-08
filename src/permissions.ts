@@ -7,7 +7,7 @@ export const statement = {
   ...defaultStatements,
   issue: ["create", "classify", "close", "assign", "delete"],
   comment: ["create", "deleteAny"],
-  testCase: ["create", "setResult"],
+  testCase: ["create", "setResult", "delete"],
   timeLog: ["create"],
 } as const;
 
@@ -27,7 +27,7 @@ export const roles = {
   qualityAnalyst: ac.newRole({
     issue: ["create"],
     comment: ["create"],
-    testCase: ["create", "setResult"],
+    testCase: ["create", "setResult", "delete"],
   }),
   productManager: ac.newRole({
     issue: ["create", "assign"],
