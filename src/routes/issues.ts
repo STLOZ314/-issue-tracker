@@ -8,6 +8,7 @@ import {
   createIssue,
   deleteComment,
   deleteIssue,
+  deleteTestCase,
   getIssueById,
   getTimeLogSummary,
   listIssues,
@@ -101,6 +102,12 @@ issuesRouter.patch(
   assigneeOnly,
   validateBody(setTestCaseResultSchema),
   setTestCaseResult,
+);
+issuesRouter.delete(
+  "/:id/test-cases/:testCaseId",
+  requirePermission("testCase", "delete"),
+  assigneeOnly,
+  deleteTestCase,
 );
 issuesRouter.delete(
   "/:id/comments/:commentId",
