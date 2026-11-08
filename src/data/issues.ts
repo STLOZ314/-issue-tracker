@@ -17,6 +17,12 @@ export interface IssueComment {
   createdOn: Date;
 }
 
+export interface FixInfo {
+  fixedBy: IssueUserRef;
+  fixedOnVersion: string;
+  fixedOnDate: Date;
+}
+
 export interface Issue {
   title: string;
   description: string;
@@ -31,6 +37,7 @@ export interface Issue {
   updatedAt?: Date;
   closedBy?: IssueUserRef;
   closedAt?: Date;
+  fixed?: FixInfo;
   comments: IssueComment[];
   testCases: unknown[];
   timeLog: IssueTimeLogEntry[];

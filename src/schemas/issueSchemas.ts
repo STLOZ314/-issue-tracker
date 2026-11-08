@@ -23,6 +23,14 @@ export const setStatusSchema = z.object({
 
 export type SetStatusInput = z.infer<typeof setStatusSchema>;
 
+export const markFixedSchema = z.object({
+  fixedOnVersion: z
+    .string()
+    .regex(/^\d+\.\d+\.\d+$/, "Version must be three numbers separated by dots"),
+});
+
+export type MarkFixedInput = z.infer<typeof markFixedSchema>;
+
 export const classifyIssueSchema = z.object({
   classification: z.enum(["unclassified", "approved", "unapproved", "duplicate"]),
 });
