@@ -5,7 +5,7 @@ import { defaultStatements } from "better-auth/plugins/admin/access";
 export const statement = {
   // The plugin's own "user" and "session" actions (set-role, ban, ...)
   ...defaultStatements,
-  issue: ["create", "classify", "close", "assign", "delete"],
+  issue: ["create", "classify", "close", "assign", "delete", "markFixed"],
   comment: ["create", "deleteAny"],
   testCase: ["create", "setResult", "delete"],
   timeLog: ["create"],
@@ -16,7 +16,7 @@ export const ac = createAccessControl(statement);
 // Which role gets which actions. Anything not listed is refused.
 export const roles = {
   developer: ac.newRole({
-    issue: ["create"],
+    issue: ["create", "markFixed"],
     comment: ["create"],
     timeLog: ["create"],
   }),

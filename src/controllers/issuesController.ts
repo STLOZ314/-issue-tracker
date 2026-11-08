@@ -10,6 +10,7 @@ import {
   ClassifyIssueInput,
   CreateIssueInput,
   ListIssuesQuery,
+  MarkFixedInput,
   SetTestCaseResultInput,
   SetStatusInput,
   UpdateIssueInput,
@@ -248,6 +249,42 @@ export async function setIssueStatus(
           ...(status === "closed"
             ? { closedBy: req.user, closedAt: now }
             : {}),
+        },
+      },
+      { returnDocument: "after" },
+    );
+    if (!result) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function markIssueFixed(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const objectId = parseId(req, res);
+  if (!objectId) return;
+
+  try {
+    const { fixedOnVersion } = req.body as MarkFixedInput;
+    const now = new Date();
+    const result = await getIssuesCollection().findOneAndUpdate(
+      { _id: objectId },
+      {
+        $set: {
+          fixed: {
+            fixedBy: req.user,
+            fixedOnVersion,
+            fixedOnDate: now,
+          },
+          updatedBy: req.user,
+          updatedAt: now,
         },
       },
       { returnDocument: "after" },
