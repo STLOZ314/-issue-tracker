@@ -19,6 +19,7 @@
 | Delete an issue | issue:delete |  |  |  |  | ✔ | Judgment: cleanup only; in tension with Req 10 |
 | Change someone's role | user:set-role |  |  |  |  | ✔ | Judgment: Req 2 never says who |
 | Log hours on an issue | timeLog:create | ✔ |  |  |  |  | Req 8 |
+| Record a fix version and date | issue:markFixed | ✔ |  |  |  |  | Judgment: Req 9 |
 
 A person who is signed in but has no role yet can read issues and nothing else.
 
@@ -31,6 +32,7 @@ A person who is signed in but has no role yet can read issues and nothing else.
 | Add a test case or mark a result | Only on an issue assigned to that Quality Analyst | Note |
 | Log hours | Only on an issue assigned to that Developer | Note |
 | Delete a comment | The comment's author, or a Technical Manager (comment:deleteAny) | Judgment |
+| Record a fix version and date | Only the assignee | Judgment |
 
 ## Gaps and judgment calls
 
@@ -40,4 +42,4 @@ A person who is signed in but has no role yet can read issues and nothing else.
 - Assign an issue / delete someone else's comment: Business Analyst, Product Manager and Technical Manager may assign, since Req 4 is silent on who; only the Technical Manager may delete another person's comment, because Req 5 says comments cannot be edited and deleting them should be rare.
 - Change priority: part of editing an issue, so it belongs to the issue's author. A Business Analyst changing it would be a fair alternative.
 - No role: a person who just signed up may read issues and do nothing else until a Technical Manager gives them a role.
-- Recording a fix version and date (Req 9): Developers on their assigned issues. There is no permission or route for it yet, so it stays in this file only.
+- Recording a fix version and date (Req 9): Developers on their assigned issues, through `issue:markFixed`.
