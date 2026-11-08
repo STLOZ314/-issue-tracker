@@ -11,6 +11,7 @@ import {
   getIssueById,
   getTimeLogSummary,
   listIssues,
+  markIssueFixed,
   setTestCaseResult,
   setIssueStatus,
   updateIssue,
@@ -40,6 +41,7 @@ import {
   createIssueSchema,
   issueIdParamsSchema,
   listIssuesQuerySchema,
+  markFixedSchema,
   setStatusSchema,
   setTestCaseResultSchema,
   updateIssueSchema,
@@ -120,6 +122,13 @@ issuesRouter.patch(
     "Only the author may edit this issue",
   ),
   updateIssue,
+);
+issuesRouter.patch(
+  "/:id/fixed",
+  requirePermission("issue", "markFixed"),
+  assigneeOnly,
+  validateBody(markFixedSchema),
+  markIssueFixed,
 );
 issuesRouter.patch(
   "/:id/status",
