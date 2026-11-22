@@ -1,16 +1,12 @@
 import { z } from "zod";
 import { issueSchema, statusSchema } from "./types";
 
+import type { CreateIssueInput } from "./schemas/issueForm";
 import type { Issue, Status } from "./types";
 
 type FieldProblem = { path: string; message: string };
 
-export type IssueDraft = {
-  title: string;
-  description: string;
-  stepsToReproduce: string;
-  priority: Issue["priority"];
-};
+export type IssueDraft = CreateIssueInput;
 
 const fieldProblemsSchema = z.array(
   z.object({ path: z.string(), message: z.string() }),

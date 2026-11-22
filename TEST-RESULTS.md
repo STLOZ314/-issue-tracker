@@ -380,3 +380,17 @@ the rest of Lab 05-04.
 ## Lab 06-03 - Part 1 - Step 5
 
 With sample API responses in the browser, the 390px phone view stacked the header and cards in one column, while the 1200px desktop view showed a horizontal header and two card columns; the switch occurred at 640px and the unstyled form boxes were not visible. The live API returned 401 in this browser session, so an authenticated visual check remains pending.
+
+## Lab 06-03 - Part 2 - Steps 8 and 9
+
+Browser checks used intercepted sample API responses because the live browser session was signed out; an authenticated add and edit remain untested.
+
+| Check | Observed |
+|---|---|
+| Empty submission | Each required text field showed its message and was marked invalid. |
+| Spaces-only title | Title remained invalid after filling the other fields. |
+| Correct a field | Its message disappeared as soon as the field was fixed. |
+| Add a sample issue | The sample issue appeared and the three text fields cleared. |
+| Edit a sample issue | The form loaded its values and showed `Save changes`. |
+| Temporarily change the API title message | The form showed `Please give the issue a title`; after restoring the schema, it showed `Title is required` again. |
+| Instructor test and type-check | 9 test files / 76 tests passed; the TypeScript check printed nothing. |
