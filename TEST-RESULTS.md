@@ -352,6 +352,27 @@ the rest of Lab 05-04.
 | `npm run build` | API and frontend production builds pass | Passed | |
 | `npm start` with local `.env` or deployment environment variables | Production server starts | Passed after changing `start` to use Node's `--env-file-if-exists=.env` option | Deployment-provided variables remain available when `.env` is absent. No environment values were displayed. |
 | GET `/edit/abc123` from built server | SPA `index.html` returned | 200 `text/html` | Direct refresh path served the SPA. |
+| GET `/edit/abc123` with the fallback temporarily commented out | `Cannot GET /edit/abc123` | 404 `text/html`, including `Cannot GET /edit/abc123` | Compiled and tested the Express app directly; restored the fallback and verified 200 SPA HTML. An authenticated browser refresh remains untested. |
 | GET `/issue` and `/assets/missing.js` from built server | Unknown GET paths return SPA HTML | Both returned 200 `text/html` | Confirms the catch-all behavior noted in the lab. |
 | GET `/health` from built server | API health JSON remains available | 200 `application/json` | |
 | Part 3 regression suite | Frontend route tests and backend tests pass | Frontend 9 files / 74 tests; backend 12 files / 144 tests passed | Build and lint passed. Live sign-in/edit/refresh still needs an authenticated browser session. |
+
+## Lab 06-02 - Step 15 - Break it on purpose
+
+| Experiment | Expected | Actual |
+|---|---|---|
+| 1. Ignore `res.ok` in `api.ts` | 10 failures across five test files | 10 failed / 64 passed across 5 failed / 4 passed files. Server-message and refusal tests failed. Restored the check. |
+| 2. Remove the local list update after a successful delete | One delete test fails | 1 failed / 73 passed; `IssueListPage.actions.test.tsx` reports “deletes an issue after the person confirms.” Restored the update. |
+| 3. Use `/issues/:id` for the edit page | Seven route tests fail | 7 failed / 67 passed, all in `App.test.tsx`, including “does not use /issues for a screen, because /issues belongs to the API.” Restored the route and navigation. |
+| 4. Use `issue.id` instead of `issue._id` | TypeScript error and three test failures | TypeScript reports TS2339: Property `id` does not exist on the Issue type. 3 tests failed / 71 passed across `IssueCard.test.tsx`, `IssueList.test.tsx`, and `App.test.tsx`. Restored `_id`. |
+| 5. Remove `event.preventDefault()` | Tests still pass | 9 test files / 74 tests passed. The test DOM emitted `HTMLFormElement's requestSubmit() method` not-implemented warnings; a real browser submission was not tested. Restored `preventDefault()`. |
+| Remove the success-branch `if (!ignore)` guard | Tests do not catch the stale-load case | 9 test files / 74 tests passed. |
+| Restore all changes | Full frontend suite passes | 9 test files / 74 tests passed. Each deliberate code change was restored. |
+
+## Lab 06-02 - Step 16 - Final checks
+
+| Check | Result |
+|---|---|
+| Frontend `npm test` | 9 test files / 74 tests passed. |
+| Frontend `npx tsc --noEmit -p tsconfig.app.json` | Passed with no output. |
+| Frontend `npm run build` | Passed. |
