@@ -32,4 +32,13 @@ app.use("/users", requireAuth, usersRouter);
 
 app.use(express.static(path.join(import.meta.dirname, "../frontend/dist")));
 
+app.get("/{*splat}", (_req, res, next) => {
+  res.sendFile(
+    path.join(import.meta.dirname, "../frontend/dist/index.html"),
+    (error) => {
+      if (error) next(error);
+    },
+  );
+});
+
 app.use(errorHandler);

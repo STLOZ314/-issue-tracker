@@ -322,3 +322,14 @@ the rest of Lab 05-04.
 | Break 3: `<issue>` and `</issue>` tags removed from the prompt line | "puts the user's text in <issue> tags, not the system prompt" fails | That test failed (1 failed, 98 passed) | Put back, tests green. |
 | Break 4: `requireAuth` removed from the `/triage` mount in `app.ts` | "is 401 when signed out, and never calls the assistant" fails | That test failed (1 failed, 98 passed) | Put back, tests green. |
 | Break 5: both `502` changed to `500` in `triageController.ts` | Both "answers 502 ..." tests fail | Both failed: "answers 502 when the answer does not fit the schema" and "answers 502 when the model answers in plain words" (2 failed, 97 passed) | Put back, tests green. |
+
+## Lab 06-02 - Part 1 - Step 7
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Reload in development | Two `GET /issues` requests | Two fetches | React StrictMode is enabled. |
+| Sign out and reload | 401 and the API's sign-in message | Sign-out returned 200; page showed `Please sign in first` | The current API uses this message rather than `Sign in required`. The browser was already signed out. |
+| Stop the API and reload | 502 and `Request failed (502)` | 502; page showed `Request failed (502)` | Vite remained running. |
+| Restart the API and reload | API responds again | Health returned 200; page showed `Please sign in first` | The inspected browser session was signed out. |
+| Sign in again and reload | Issue list loads | User reported signing in and loading the issue list | The inspected browser session was separate and still signed out. |
+| Part 1 tests and type-check | 4 test files, 31 tests, and no TypeScript errors | 4 files and 31 tests passed; type-check passed | The full lab suite also exists in the frontend. |

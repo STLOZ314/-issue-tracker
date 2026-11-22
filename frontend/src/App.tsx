@@ -1,32 +1,46 @@
-import { useEffect, useState } from "react";
+import { Link, NavLink, Outlet, Route, Routes, useNavigate } from "react-router";
+import { IssueListPage } from "./pages/IssueListPage";
+import { EditIssuePage } from "./pages/EditIssuePage";
 
-interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  status: "open" | "in-progress" | "closed";
-  priority: "low" | "medium" | "high";
+function Layout() {
+  return (
+    <>
+      <header>
+        <h1>Issue Tracker</h1>
+        <nav aria-label="Main navigation">
+          <NavLink to="/">Issues</NavLink>
+        </nav>
+      </header>
+      <main>
+        <Outlet />
+      </main>
+    </>
+  );
+}
+
+function NotFound() {
+  return (
+    <section>
+      <h2>Page not found</h2>
+      <Link to="/">Back to the issue list</Link>
+    </section>
+  );
+}
+
+function RoutedIssueListPage() {
+  const navigate = useNavigate();
+  return <IssueListPage onSelect={(id) => navigate(`/edit/${id}`)} />;
 }
 
 function App() {
-  const [issues, setIssues] = useState<Issue[]>([]);
-
-  useEffect(() => {
-    fetch("/issues")
-      .then((res) => res.json())
-      .then((data: Issue[]) => setIssues(data))
-      .catch((err) => console.error("Error fetching issues:", err));
-  }, []);
-
   return (
-    <div>
-      <h1>Issues</h1>
-      <ul>
-        {issues.map((issue) => (
-          <li key={issue.id}>{issue.title}</li>
-        ))}
-      </ul>
-    </div>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<RoutedIssueListPage />} />
+        <Route path="edit/:id" element={<EditIssuePage />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 }
 
