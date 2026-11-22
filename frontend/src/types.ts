@@ -20,15 +20,7 @@ export const issueSchema = z.object({
   createdOn: z.string(),
 });
 
-export const issueDraftSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  stepsToReproduce: z.string().min(1),
-  priority: prioritySchema,
-});
-
 export type Status = z.infer<typeof statusSchema>;
 export type Priority = z.infer<typeof prioritySchema>;
 export type Issue = z.infer<typeof issueSchema>;
 export type StatusFilter = Status | "all";
-export type IssueDraft = z.infer<typeof issueDraftSchema>;

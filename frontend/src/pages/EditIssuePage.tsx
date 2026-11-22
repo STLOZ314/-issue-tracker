@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { ApiError, getIssue, updateIssue } from "../api";
+import { ApiError, getIssue, updateIssue, type IssueDraft } from "../api";
 import { AddIssueForm } from "../components/AddIssueForm";
-import type { Issue, IssueDraft } from "../types";
+import type { Issue } from "../types";
 
 type EditState =
   | { kind: "loading"; id: string }

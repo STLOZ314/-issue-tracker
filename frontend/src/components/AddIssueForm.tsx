@@ -1,10 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { ApiError } from "../api";
-import {
-  prioritySchema,
-  type IssueDraft,
-  type Priority,
-} from "../types";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { ApiError, type IssueDraft } from "../api";
+import type { Priority } from "../types";
 
 type AddIssueFormProps = {
   onAdd: (draft: IssueDraft) => void | Promise<void>;
@@ -19,6 +15,12 @@ type DraftFields = {
   stepsToReproduce: string;
   priority: Priority;
 };
+
+const priorities: Priority[] = ["low", "medium", "high"];
+
+function isPriority(value: string): value is Priority {
+  return priorities.some((priority) => priority === value);
+}
 
 const emptyDraft: DraftFields = {
   title: "",
@@ -36,12 +38,19 @@ export function AddIssueForm({
   const [draft, setDraft] = useState<DraftFields>(initial);
   const [problems, setProblems] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   function updateField<K extends keyof DraftFields>(
     key: K,
     value: DraftFields[K],
   ) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function handlePriorityChange(event: ChangeEvent<HTMLSelectElement>) {
+    if (isPriority(event.currentTarget.value)) {
+      updateField("priority", event.currentTarget.value);
+    }
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -64,19 +73,20 @@ export function AddIssueForm({
     setServerError("");
     if (Object.keys(nextProblems).length > 0) return;
 
+    setBusy(true);
     try {
       await onAdd(trimmed);
-      if (clearOnSuccess) setDraft(emptyDraft);
+      if (clearOnSuccess) {
+        setDraft((current) => ({ ...emptyDraft, priority: current.priority }));
+      }
     } catch (error) {
       setServerError(
         error instanceof ApiError
           ? error.message
-          : error instanceof TypeError
-            ? "Could not reach the server"
-            : error instanceof Error
-              ? error.message
-              : "Something went wrong",
+          : "Could not reach the server",
       );
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -126,21 +136,20 @@ export function AddIssueForm({
           Priority
           <select
             value={draft.priority}
-            onChange={(event) =>
-              updateField(
-                "priority",
-                prioritySchema.parse(event.currentTarget.value),
-              )
-            }
+            onChange={handlePriorityChange}
           >
-            <option value="low">low</option>
-            <option value="medium">medium</option>
-            <option value="high">high</option>
+            {priorities.map((priority) => (
+              <option key={priority} value={priority}>
+                {priority}
+              </option>
+            ))}
           </select>
         </label>
       </div>
       {serverError && <p role="alert">{serverError}</p>}
-      <button type="submit">{submitLabel}</button>
+      <button type="submit" disabled={busy}>
+        {submitLabel}
+      </button>
     </form>
   );
 }

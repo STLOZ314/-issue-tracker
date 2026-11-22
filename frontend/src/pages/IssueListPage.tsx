@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
-import { ApiError, createIssue, deleteIssue, listIssues, setStatus } from "../api";
+import {
+  ApiError,
+  createIssue,
+  deleteIssue,
+  listIssues,
+  setStatus,
+  type IssueDraft,
+} from "../api";
 import { AddIssueForm } from "../components/AddIssueForm";
 import { IssueList } from "../components/IssueList";
-import type { Issue, IssueDraft, Status } from "../types";
+import type { Issue, Status } from "../types";
 
 type LoadState =
   | { kind: "loading" }
@@ -13,73 +20,65 @@ type IssueListPageProps = {
   onSelect?: (id: string) => void;
 };
 
-function errorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
-  if (error instanceof TypeError) return "Could not reach the server";
-  return error instanceof Error ? error.message : "Something went wrong";
+function messageFor(error: unknown): string {
+  return error instanceof ApiError
+    ? error.message
+    : "Could not reach the server";
 }
 
 export function IssueListPage({ onSelect }: IssueListPageProps) {
   const [state, setState] = useState<LoadState>({ kind: "loading" });
-  const [mutationError, setMutationError] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    let active = true;
-    listIssues().then(
-      (issues) => {
-        if (active) setState({ kind: "loaded", issues });
-      },
-      (error: unknown) => {
-        if (active) setState({ kind: "error", message: errorMessage(error) });
-      },
-    );
+    let ignore = false;
+    const load = async () => {
+      try {
+        const issues = await listIssues();
+        if (!ignore) setState({ kind: "loaded", issues });
+      } catch (error) {
+        if (!ignore) setState({ kind: "error", message: messageFor(error) });
+      }
+    };
+
+    void load();
     return () => {
-      active = false;
+      ignore = true;
     };
   }, []);
 
-  async function addIssue(draft: IssueDraft) {
-    const created = await createIssue(draft);
+  function replaceIssues(change: (issues: Issue[]) => Issue[]) {
     setState((current) =>
       current.kind === "loaded"
-        ? { ...current, issues: [...current.issues, created] }
+        ? { kind: "loaded", issues: change(current.issues) }
         : current,
     );
   }
 
-  async function changeStatus(id: string, status: Status) {
-    setMutationError("");
+  async function handleAdd(draft: IssueDraft) {
+    const created = await createIssue(draft);
+    replaceIssues((issues) => [...issues, created]);
+  }
+
+  async function handleStatusChange(id: string, status: Status) {
+    setActionError(null);
     try {
       const updated = await setStatus(id, status);
-      setState((current) =>
-        current.kind === "loaded"
-          ? {
-              ...current,
-              issues: current.issues.map((issue) =>
-                issue._id === id ? updated : issue,
-              ),
-            }
-          : current,
+      replaceIssues((issues) =>
+        issues.map((issue) => (issue._id === id ? updated : issue)),
       );
     } catch (error) {
-      setMutationError(errorMessage(error));
+      setActionError(messageFor(error));
     }
   }
 
-  async function removeIssue(id: string) {
-    setMutationError("");
+  async function handleDelete(id: string) {
+    setActionError(null);
     try {
       await deleteIssue(id);
-      setState((current) =>
-        current.kind === "loaded"
-          ? {
-              ...current,
-              issues: current.issues.filter((issue) => issue._id !== id),
-            }
-          : current,
-      );
+      replaceIssues((issues) => issues.filter((issue) => issue._id !== id));
     } catch (error) {
-      setMutationError(errorMessage(error));
+      setActionError(messageFor(error));
     }
   }
 
@@ -92,19 +91,19 @@ export function IssueListPage({ onSelect }: IssueListPageProps) {
   }
 
   return (
-    <section>
-      <h2>Issues</h2>
-      {mutationError && <p role="alert">{mutationError}</p>}
-      <AddIssueForm onAdd={addIssue} />
-      {state.issues.length === 0 && (
+    <>
+      <AddIssueForm onAdd={handleAdd} />
+      {actionError && <p role="alert">{actionError}</p>}
+      {state.issues.length === 0 ? (
         <p>No issues yet. Add the first one.</p>
+      ) : (
+        <IssueList
+          issues={state.issues}
+          onSelect={onSelect}
+          onStatusChange={handleStatusChange}
+          onDelete={handleDelete}
+        />
       )}
-      <IssueList
-        issues={state.issues}
-        onSelect={onSelect}
-        onStatusChange={changeStatus}
-        onDelete={removeIssue}
-      />
-    </section>
+    </>
   );
 }

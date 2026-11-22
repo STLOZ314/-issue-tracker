@@ -1,14 +1,16 @@
 import { z } from "zod";
-import {
-  issueDraftSchema,
-  issueSchema,
-  statusSchema,
-  type Issue,
-  type IssueDraft,
-  type Status,
-} from "./types";
+import { issueSchema, statusSchema } from "./types";
+
+import type { Issue, Status } from "./types";
 
 type FieldProblem = { path: string; message: string };
+
+export type IssueDraft = {
+  title: string;
+  description: string;
+  stepsToReproduce: string;
+  priority: Issue["priority"];
+};
 
 const fieldProblemsSchema = z.array(
   z.object({ path: z.string(), message: z.string() }),
@@ -62,6 +64,14 @@ async function getJson<T>(
   return schema.parse(await res.json());
 }
 
+function withBody(method: string, body: unknown): RequestInit {
+  return {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
+
 export function listIssues(): Promise<Issue[]> {
   return getJson("/issues", z.array(issueSchema));
 }
@@ -71,36 +81,25 @@ export function getIssue(id: string): Promise<Issue> {
 }
 
 export function createIssue(draft: IssueDraft): Promise<Issue> {
-  const payload = issueDraftSchema.parse(draft);
-  return getJson("/issues", issueSchema, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  return getJson("/issues", issueSchema, withBody("POST", draft));
 }
 
 export function updateIssue(
   id: string,
   changes: Partial<IssueDraft>,
 ): Promise<Issue> {
-  const payload = issueDraftSchema.partial().parse(changes);
-  return getJson(`/issues/${encodeURIComponent(id)}`, issueSchema, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  return getJson(
+    `/issues/${encodeURIComponent(id)}`,
+    issueSchema,
+    withBody("PATCH", changes),
+  );
 }
 
 export function setStatus(id: string, status: Status): Promise<Issue> {
-  const payload = z.object({ status: statusSchema }).parse({ status });
   return getJson(
     `/issues/${encodeURIComponent(id)}/status`,
     issueSchema,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    },
+    withBody("PATCH", { status: statusSchema.parse(status) }),
   );
 }
 

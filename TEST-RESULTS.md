@@ -333,3 +333,14 @@ the rest of Lab 05-04.
 | Restart the API and reload | API responds again | Health returned 200; page showed `Please sign in first` | The inspected browser session was signed out. |
 | Sign in again and reload | Issue list loads | User reported signing in and loading the issue list | The inspected browser session was separate and still signed out. |
 | Part 1 tests and type-check | 4 test files, 31 tests, and no TypeScript errors | 4 files and 31 tests passed; type-check passed | The full lab suite also exists in the frontend. |
+
+## Lab 06-02 - Part 2 - Step 12
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Add an issue with all fields | New issue appears; count increases without reload | Not run against the live API; fake API add test passes | Browser session was signed out. |
+| Submit with an empty title | Required message; no request sent | Not run in the live app; form test verifies required-field validation and no add callback | Browser session was signed out. |
+| Change an issue's status | UI updates after API success | Not run against the live API; fake API status-change test passes | Browser session was signed out. |
+| Cancel and confirm a delete | Cancel keeps the issue; confirmed delete removes it | Not run against the live API; fake API action tests pass | Browser session was signed out. |
+| Try changing or deleting another user's issue | API error appears; issue stays visible | Not run with a second account; fake API delete-refusal test verifies the issue remains | Browser session was signed out. |
+| Part 2 frontend regression suite | All provided frontend tests pass | 9 test files, 74 tests passed | Build and lint also passed. |

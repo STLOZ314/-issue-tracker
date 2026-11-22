@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import type { Issue, Status, StatusFilter } from "../types";
 import { IssueCard } from "./IssueCard";
-import {
-  statusSchema,
-  type Issue,
-  type Status,
-  type StatusFilter,
-} from "../types";
 
 type IssueListProps = {
   issues: Issue[];
   onSelect?: (id: string) => void;
-  onStatusChange?: (id: string, status: Status) => void | Promise<void>;
-  onDelete?: (id: string) => void | Promise<void>;
+  onStatusChange?: (id: string, status: Status) => void;
+  onDelete?: (id: string) => void;
 };
+
+const filters: StatusFilter[] = ["all", "open", "in-progress", "closed"];
+
+function isStatusFilter(value: string): value is StatusFilter {
+  return filters.some((filter) => filter === value);
+}
 
 export function IssueList({
   issues,
@@ -20,37 +21,37 @@ export function IssueList({
   onStatusChange,
   onDelete,
 }: IssueListProps) {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const visibleIssues =
-    statusFilter === "all"
-      ? issues
-      : issues.filter((issue) => issue.status === statusFilter);
+  const [filter, setFilter] = useState<StatusFilter>("all");
+
+  function handleFilterChange(event: ChangeEvent<HTMLSelectElement>) {
+    if (isStatusFilter(event.currentTarget.value)) {
+      setFilter(event.currentTarget.value);
+    }
+  }
+
+  const shown =
+    filter === "all" ? issues : issues.filter((issue) => issue.status === filter);
 
   return (
-    <section aria-label="Issue list">
+    <section>
       <label>
         Filter by status
-        <select
-          value={statusFilter}
-          onChange={(event) => {
-            const value = event.currentTarget.value;
-            setStatusFilter(
-              value === "all" ? value : statusSchema.parse(value),
-            );
-          }}
-        >
-          <option value="all">all</option>
-          <option value="open">open</option>
-          <option value="in-progress">in-progress</option>
-          <option value="closed">closed</option>
+        <select value={filter} onChange={handleFilterChange}>
+          {filters.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
         </select>
       </label>
-      <p>Showing {visibleIssues.length} of {issues.length} issues</p>
-      {visibleIssues.length === 0 ? (
+      <p>
+        Showing {shown.length} of {issues.length} issues
+      </p>
+      {shown.length === 0 ? (
         <p>No issues to show.</p>
       ) : (
         <ul>
-          {visibleIssues.map((issue) => (
+          {shown.map((issue) => (
             <li key={issue._id}>
               <IssueCard
                 issue={issue}
