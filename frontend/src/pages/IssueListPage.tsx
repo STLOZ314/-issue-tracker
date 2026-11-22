@@ -20,6 +20,9 @@ type IssueListPageProps = {
   onSelect?: (id: string) => void;
 };
 
+const alertClass =
+  "rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive";
+
 function messageFor(error: unknown): string {
   return error instanceof ApiError
     ? error.message
@@ -83,19 +86,19 @@ export function IssueListPage({ onSelect }: IssueListPageProps) {
   }
 
   if (state.kind === "loading") {
-    return <p role="status">Loading issues...</p>;
+    return <p role="status" className="text-sm text-muted-foreground">Loading issues...</p>;
   }
 
   if (state.kind === "error") {
-    return <p role="alert">{state.message}</p>;
+    return <p role="alert" className={alertClass}>{state.message}</p>;
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <AddIssueForm onAdd={handleAdd} />
-      {actionError && <p role="alert">{actionError}</p>}
+      {actionError && <p role="alert" className={alertClass}>{actionError}</p>}
       {state.issues.length === 0 ? (
-        <p>No issues yet. Add the first one.</p>
+        <p className="text-sm text-muted-foreground">No issues yet. Add the first one.</p>
       ) : (
         <IssueList
           issues={state.issues}
@@ -104,6 +107,6 @@ export function IssueListPage({ onSelect }: IssueListPageProps) {
           onDelete={handleDelete}
         />
       )}
-    </>
+    </div>
   );
 }

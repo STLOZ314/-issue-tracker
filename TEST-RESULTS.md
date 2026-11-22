@@ -376,3 +376,7 @@ the rest of Lab 05-04.
 | Frontend `npm test` | 9 test files / 74 tests passed. |
 | Frontend `npx tsc --noEmit -p tsconfig.app.json` | Passed with no output. |
 | Frontend `npm run build` | Passed. |
+
+## Lab 06-03 - Part 1 - Step 5
+
+With sample API responses in the browser, the 390px phone view stacked the header and cards in one column, while the 1200px desktop view showed a horizontal header and two card columns; the switch occurred at 640px and the unstyled form boxes were not visible. The live API returned 401 in this browser session, so an authenticated visual check remains pending.
