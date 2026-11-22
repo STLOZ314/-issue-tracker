@@ -322,3 +322,57 @@ the rest of Lab 05-04.
 | Break 3: `<issue>` and `</issue>` tags removed from the prompt line | "puts the user's text in <issue> tags, not the system prompt" fails | That test failed (1 failed, 98 passed) | Put back, tests green. |
 | Break 4: `requireAuth` removed from the `/triage` mount in `app.ts` | "is 401 when signed out, and never calls the assistant" fails | That test failed (1 failed, 98 passed) | Put back, tests green. |
 | Break 5: both `502` changed to `500` in `triageController.ts` | Both "answers 502 ..." tests fail | Both failed: "answers 502 when the answer does not fit the schema" and "answers 502 when the model answers in plain words" (2 failed, 97 passed) | Put back, tests green. |
+
+## Lab 06-02 - Part 1 - Step 7
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Reload in development | Two `GET /issues` requests | Two fetches | React StrictMode is enabled. |
+| Sign out and reload | 401 and the API's sign-in message | Sign-out returned 200; page showed `Please sign in first` | The current API uses this message rather than `Sign in required`. The browser was already signed out. |
+| Stop the API and reload | 502 and `Request failed (502)` | 502; page showed `Request failed (502)` | Vite remained running. |
+| Restart the API and reload | API responds again | Health returned 200; page showed `Please sign in first` | The inspected browser session was signed out. |
+| Sign in again and reload | Issue list loads | User reported signing in and loading the issue list | The inspected browser session was separate and still signed out. |
+| Part 1 tests and type-check | 4 test files, 31 tests, and no TypeScript errors | 4 files and 31 tests passed; type-check passed | The full lab suite also exists in the frontend. |
+
+## Lab 06-02 - Part 2 - Step 12
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| Add an issue with all fields | New issue appears; count increases without reload | Not run against the live API; fake API add test passes | Browser session was signed out. |
+| Submit with an empty title | Required message; no request sent | Not run in the live app; form test verifies required-field validation and no add callback | Browser session was signed out. |
+| Change an issue's status | UI updates after API success | Not run against the live API; fake API status-change test passes | Browser session was signed out. |
+| Cancel and confirm a delete | Cancel keeps the issue; confirmed delete removes it | Not run against the live API; fake API action tests pass | Browser session was signed out. |
+| Try changing or deleting another user's issue | API error appears; issue stays visible | Not run with a second account; fake API delete-refusal test verifies the issue remains | Browser session was signed out. |
+| Part 2 frontend regression suite | All provided frontend tests pass | 9 test files, 74 tests passed | Build and lint also passed. |
+
+## Lab 06-02 - Part 3 - Step 14
+
+| Test | Expected | Actual | Notes |
+|---|---|---|---|
+| `npm run build` | API and frontend production builds pass | Passed | |
+| `npm start` with local `.env` or deployment environment variables | Production server starts | Passed after changing `start` to use Node's `--env-file-if-exists=.env` option | Deployment-provided variables remain available when `.env` is absent. No environment values were displayed. |
+| GET `/edit/abc123` from built server | SPA `index.html` returned | 200 `text/html` | Direct refresh path served the SPA. |
+| GET `/edit/abc123` with the fallback temporarily commented out | `Cannot GET /edit/abc123` | 404 `text/html`, including `Cannot GET /edit/abc123` | Compiled and tested the Express app directly; restored the fallback and verified 200 SPA HTML. An authenticated browser refresh remains untested. |
+| GET `/issue` and `/assets/missing.js` from built server | Unknown GET paths return SPA HTML | Both returned 200 `text/html` | Confirms the catch-all behavior noted in the lab. |
+| GET `/health` from built server | API health JSON remains available | 200 `application/json` | |
+| Part 3 regression suite | Frontend route tests and backend tests pass | Frontend 9 files / 74 tests; backend 12 files / 144 tests passed | Build and lint passed. Live sign-in/edit/refresh still needs an authenticated browser session. |
+
+## Lab 06-02 - Step 15 - Break it on purpose
+
+| Experiment | Expected | Actual |
+|---|---|---|
+| 1. Ignore `res.ok` in `api.ts` | 10 failures across five test files | 10 failed / 64 passed across 5 failed / 4 passed files. Server-message and refusal tests failed. Restored the check. |
+| 2. Remove the local list update after a successful delete | One delete test fails | 1 failed / 73 passed; `IssueListPage.actions.test.tsx` reports “deletes an issue after the person confirms.” Restored the update. |
+| 3. Use `/issues/:id` for the edit page | Seven route tests fail | 7 failed / 67 passed, all in `App.test.tsx`, including “does not use /issues for a screen, because /issues belongs to the API.” Restored the route and navigation. |
+| 4. Use `issue.id` instead of `issue._id` | TypeScript error and three test failures | TypeScript reports TS2339: Property `id` does not exist on the Issue type. 3 tests failed / 71 passed across `IssueCard.test.tsx`, `IssueList.test.tsx`, and `App.test.tsx`. Restored `_id`. |
+| 5. Remove `event.preventDefault()` | Tests still pass | 9 test files / 74 tests passed. The test DOM emitted `HTMLFormElement's requestSubmit() method` not-implemented warnings; a real browser submission was not tested. Restored `preventDefault()`. |
+| Remove the success-branch `if (!ignore)` guard | Tests do not catch the stale-load case | 9 test files / 74 tests passed. |
+| Restore all changes | Full frontend suite passes | 9 test files / 74 tests passed. Each deliberate code change was restored. |
+
+## Lab 06-02 - Step 16 - Final checks
+
+| Check | Result |
+|---|---|
+| Frontend `npm test` | 9 test files / 74 tests passed. |
+| Frontend `npx tsc --noEmit -p tsconfig.app.json` | Passed with no output. |
+| Frontend `npm run build` | Passed. |

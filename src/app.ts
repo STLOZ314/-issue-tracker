@@ -30,6 +30,17 @@ app.use("/issues", requireAuth, issuesRouter);
 app.use("/triage", requireAuth, triageRouter);
 app.use("/users", requireAuth, usersRouter);
 
-app.use(express.static(path.join(import.meta.dirname, "../frontend/dist")));
+const dist = path.join(import.meta.dirname, "../frontend/dist");
+
+app.use(express.static(dist));
+
+app.get("/{*splat}", (_req, res, next) => {
+  res.sendFile(
+    path.join(dist, "index.html"),
+    (error) => {
+      if (error) next(error);
+    },
+  );
+});
 
 app.use(errorHandler);
