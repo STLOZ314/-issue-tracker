@@ -1,29 +1,20 @@
-import { Link, NavLink, Outlet, Route, Routes, useNavigate } from "react-router";
+import { Outlet, Route, Routes, useNavigate } from "react-router";
+import { NavBar } from "./components/NavBar";
 import { IssueListPage } from "./pages/IssueListPage";
-import { EditIssuePage } from "./pages/EditIssuePage";
+import { IssueEditPage } from "./pages/IssueEditPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 function Layout() {
   return (
     <>
       <header>
         <h1>Issue Tracker</h1>
-        <nav aria-label="Main navigation">
-          <NavLink to="/">Issues</NavLink>
-        </nav>
+        <NavBar />
       </header>
       <main>
         <Outlet />
       </main>
     </>
-  );
-}
-
-function NotFound() {
-  return (
-    <section>
-      <h2>Page not found</h2>
-      <Link to="/">Back to the issue list</Link>
-    </section>
   );
 }
 
@@ -37,8 +28,8 @@ function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<RoutedIssueListPage />} />
-        <Route path="edit/:id" element={<EditIssuePage />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="edit/:id" element={<IssueEditPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

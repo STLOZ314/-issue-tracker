@@ -15,7 +15,7 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Something went wrong";
 }
 
-export function EditIssuePage() {
+export function IssueEditPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const [state, setState] = useState<EditState>({ kind: "loading", id: "" });
