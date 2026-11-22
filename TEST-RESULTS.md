@@ -394,3 +394,14 @@ Browser checks used intercepted sample API responses because the live browser se
 | Edit a sample issue | The form loaded its values and showed `Save changes`. |
 | Temporarily change the API title message | The form showed `Please give the issue a title`; after restoring the schema, it showed `Title is required` again. |
 | Instructor test and type-check | 9 test files / 76 tests passed; the TypeScript check printed nothing. |
+
+## Lab 06-03 - Step 10 - Break it on purpose
+
+| Experiment | Observed |
+|---|---|
+| 1. Remove the Tailwind import | 9 files / 76 tests passed, rather than the lab's 74. In the signed-out browser the heading measured 32px and the navbar became a blue underlined link; the theme background remained. Restored the import. |
+| 2. Remove the Vite alias | 7 of 9 files failed to start, rather than 6; the remaining 2 files passed 12 tests. Imports such as `@/components/ui/field` and `@/lib/utils` could not resolve. Restored the alias. |
+| 3. Remove the TypeScript alias | TypeScript reported 13 TS2307 missing-module errors and one related implicit-any error, rather than 10 errors; all 76 tests passed. Restored the alias. |
+| 4. Remove the three trims | 2 tests failed / 74 passed: spaces-only input and trimmed submission. Restored all three trims. |
+| 5. Remove the server-detail loop | 1 test failed / 75 passed: server field problems were not placed next to their fields. Restored the loop. |
+| 6. Disconnect the title input | 16 tests failed / 60 passed across 3 files, including add and edit tests. Restored the field spread. |
