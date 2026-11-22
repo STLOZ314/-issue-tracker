@@ -41,7 +41,7 @@ export function IssueEditPage() {
 
   if (state.kind === "error") {
     return (
-      <section>
+      <section className="flex flex-col gap-4">
         <p role="alert">{state.message}</p>
         <Link to="/">Back to all issues</Link>
       </section>
@@ -62,7 +62,7 @@ export function IssueEditPage() {
   }
 
   return (
-    <section>
+    <section className="flex flex-col gap-4">
       <h2>Edit issue</h2>
       <Link to="/">Back to all issues</Link>
       <AddIssueForm
